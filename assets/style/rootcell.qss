@@ -1,0 +1,44 @@
+
+RootCellWidget #scrollarea_content{
+    background-color: transparent;
+}
+
+RootCellWidget QLabel{
+    color: black;
+}
+
+RootCellWidget QLineEdit, RootCellWidget QComboBox{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+}
+
+RootCellWidget #frame_system, RootCellWidget #frame_hyp, RootCellWidget #frame_pci_mmconfig{
+    border: 1px solid rgba(222,222,222,1.000);
+}
+
+RootCellWidget #frame_system_title, RootCellWidget #frame_hyp_title, RootCellWidget #frame_pci_mmconfig_title{
+    height: 36;
+    padding: 7px 0 1px 7px;
+    background-color: rgba(222,222,222,1.000);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+
+RootCellWidget #frame_system_title QLabel,
+RootCellWidget #frame_hyp_title QLabel,
+RootCellWidget #frame_pci_mmconfig_title QLabel{
+    font-size: 18px;
+    color: black;
+}
+
+RootCellWidget #label_debug_terminal,
+RootCellWidget #label_pci_mmconfig_base{
+    min-width: 150px;
+}

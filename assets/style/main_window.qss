@@ -1,0 +1,192 @@
+
+MainWindow #frame_window_title{
+    background-color: rgba(222,222,222,1.000);
+}
+
+#frame_window_title #btn_close{
+    width: 40px;
+    height: 40px;
+    border-image: url(:/images/close.png);
+}
+#frame_window_title #btn_close::hover{
+    border-image: url(:/images/close_pressed.png);
+}
+#frame_window_title #btn_minimize{
+    width: 40px;
+    height: 40px;
+    border-image: url(:/images/minimize.png);
+}
+#frame_window_title #btn_minimize::hover{
+    border-image: url(:/images/minimize_pressed.png);
+}
+#frame_window_title #btn_maximize{
+    width: 40px;
+    height: 40px;
+    border-image: url(:/images/maximize.png);
+}
+#frame_window_title #btn_maximize::hover{
+    border-image: url(:/images/maximize_pressed.png);
+}
+#frame_window_title #btn_logo{
+    width: 37px;
+    height: 26px;
+    border-image: url(:/images/logo.png);
+}
+#frame_window_title #label_title{
+    font-size: 20px;
+    color: rgb(	0, 0, 0);
+}
+#frame_window_title #label_version{
+    font-size: 16px;
+    color: rgb(	105, 105, 105);
+}
+
+#frame_status{
+    background-color: rgba(222,222,222,1.000);
+}
+
+#frame_status #btn_tip,
+#frame_status #btn_check,
+#frame_status #btn_log{
+    width: 70px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(56,176,213,0.3);
+
+    padding-left: 10px;
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+
+    font-size: 15px;
+    color: black;
+}
+#frame_status #btn_tip{
+    background-image: url(:/images/tip.png);
+}
+#frame_status #btn_tip::hover{
+    color: black;
+    background-image: url(:/images/tip_hover.png);
+}
+#frame_status #btn_tip::checked{
+    color: black;
+    background-image: url(:/images/tip_hover.png);
+    border: 1px solid black;
+}
+
+#frame_status #btn_log{
+    background-image: url(:/images/log.png);
+}
+#frame_status #btn_log::hover{
+    color: black;
+    background-image: url(:/images/log_hover.png);
+}
+#frame_status #btn_log::checked{
+    color: black;
+    background-image: url(:/images/log_hover.png);
+    border: 1px solid black;
+}
+
+#frame_status #btn_check{
+    background-image: url(:/images/check.png);
+}
+#frame_status #btn_check::hover{
+    color: black;
+    background-image: url(:/images/check_hover.png);
+}
+#frame_status #btn_check::checked{
+    color: black;
+    background-image: url(:/images/check_hover.png);
+    border: 1px solid black;
+}
+
+MainWindow #frame_tools{
+    background-color: rgba(244,244,244,1.000);
+}
+
+MainWindow #frame_tools QSplitter{
+    background-color: rgba(244,244,244,1.000);
+}
+MainWindow #frame_tools QSplitter::handle{
+    image: none;
+    background-color: rgba(244,244,244,1.000);
+}
+
+CheckWidget #frame_title,
+LogWidget #frame_title,
+TipWidget #frame_title{
+    min-height: 40px;
+    background-color: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,1.000);
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+}
+CheckWidget QLabel,
+LogWidget QLabel,
+TipWidget QLabel{
+    font-size: 16px;
+    color: black;
+}
+LogWidget #label_icon{
+    min-width: 20;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/log_hover.png)
+}
+TipWidget #label_icon{
+    min-width: 28;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/tip_hover.png)
+}
+
+CheckWidget #frame_content,
+LogWidget #frame_content,
+TipWidget #frame_content{
+    border-width: 0 1px 1px 1px;
+    border-color: gray;
+    border-style: solid;
+    background-color: gray;
+}
+
+
+LogWidget #textbrowser{
+    color: black;
+}
+LogWidget #btn_clean{
+    width: 20;
+    height: 20;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/clean.png)
+}
+LogWidget QComboBox{
+    height: 24px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(120, 120, 120,0.5);
+    padding-left: 12px;
+    color: black;
+    font-size: 14px;
+}
+
+CheckWidget #btn_clean,
+CheckWidget #btn_check
+{
+    width: 60px;
+    height: 24px;
+    border-radius: 3px;
+    border: 1px solid 	rgba(120, 120, 120,0.5);
+    color: 	black;
+    font-size: 15px;
+}
+
+CheckWidget #btn_clean::hover,
+CheckWidget #btn_check::hover
+{
+    background-color: rgba(124,220,250,1.000);
+    border: 1px solid rgba(124,220,250,1.000);
+    color: black;
+}

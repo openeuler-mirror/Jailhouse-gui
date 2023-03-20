@@ -1,0 +1,28 @@
+[system]
+    name = "aarch64"
+    cpu_count = 4
+
+    gic.version = 3
+    gic.gicd_base = 0x08000000
+    gic.gicr_base = 0x080a0000
+    gic.gicc_base = 0x08100000
+    gic.gich_base = 0x08030000
+    gic.gicv_base = 0x08040000
+
+# 芯片内存布局
+[regions]
+    smmu = { addr = 0x09050000, size = 0x20000 }
+    mmio = { addr = 0x0a000000, size = 0x1000 }
+
+    pci_ecam = { addr = 0x3f000000, size = 0x01000000, type = "pci_ecam"}
+    pci_mmio = { addr = 0x10000000, size = 0x2eff0000, type = "pci_io" }
+    pci_pio = { addr = 0x3ef0000, size = 0x10000, type = "pci_io" }
+    pci_mem64 = { addr = 0x8000000000, size = 0x100000000, type = "pci_mem" }
+
+# 芯片设备
+[devices]
+    uart0 = { addr = 0x09000000, size = 0x1000, irq = 33, type = "pl011" }
+    rtc   = { addr = 0x09010000, size = 0x1000, irq=34 }
+    fwcfg = { addr = 0x09020000, size = 0x1000 }
+    gpio  = { addr = 0x09030000, size = 0x1000, irq=39 }
+    suart = { addr = 0x09040000, size = 0x1000, irq = 40 }

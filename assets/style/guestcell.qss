@@ -1,0 +1,104 @@
+GuestCellsWidget #scrollarea_content{
+    background-color: transparent;
+}
+
+GuestCellsWidget QLabel{
+    color: black;
+}
+
+GuestCellsWidget QLineEdit, GuestCellsWidget QComboBox{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+GuestCellsWidget #frame_guestcells,
+GuestCellsWidget #frame_guestcell{
+    border: 1px solid rgba(222,222,222,0.3);
+}
+
+GuestCellsWidget #frame_guestcells_title,
+GuestCellsWidget #frame_guestcell_title{
+    height: 36;
+    padding: 7px 0 1px 7px;
+    background-color: rgba(222,222,222,1.000);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+
+GuestCellsWidget #frame_guestcells_title QLabel,
+GuestCellsWidget #frame_guestcell_title QLabel{
+    font-size: 18px;
+    color: black;
+}
+
+GuestCellsWidget QListView{
+    background-color: rgba(222,222,222,1.000);
+    alternate-background-color: rgba(222,222,222,1.000);
+    color: black;
+    font-size: 15px;
+    border-radius: 5px;
+}
+GuestCellsWidget QListView::item{
+    min-height: 30px;
+}
+GuestCellsWidget QListView::item:selected{
+}
+
+GuestCellsWidget #label_sysattr_tag,
+GuestCellsWidget #label_sysmem_tag,
+GuestCellsWidget #label_memmap_tag,
+GuestCellsWidget #label_devices_tag,
+GuestCellsWidget #label_comm_tag,
+GuestCellsWidget #label_pci_devices_tag,
+GuestCellsWidget #label_cpu_tag{
+    min-width: 17;
+    min-height: 19;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+
+GuestCellsWidget #btn_create_cell,
+GuestCellsWidget #btn_remove_cell
+{
+    width: 117px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(124,220,250,1.000);
+    color: black;
+    font-size: 15px;
+}
+
+GuestCellsWidget #btn_create_cell::hover,
+GuestCellsWidget #btn_remove_cell::hover
+{
+    background-color: rgba(124,220,250,1.000);
+    border: 1px solid rgb(71, 190, 249);
+    color: black;
+}
+
+#btn_use_virt_cpuid,
+#btn_virtual_console {
+    width: 60px;
+    height: 24px;
+    color: black;
+    background-color: transparent;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/switch-off.png);
+}
+
+#btn_use_virt_cpuid::checked,
+#btn_virtual_console::checked {
+    border-image: url(:/images/switch-on.png);
+}

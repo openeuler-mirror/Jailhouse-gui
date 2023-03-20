@@ -1,0 +1,78 @@
+PCIDevicesWidget #scrollarea_content{
+    background-color: transparent;
+}
+
+PCIDevicesWidget QLabel{
+    color: black;
+}
+
+PCIDevicesWidget QLineEdit{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    padding-left: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    color: black;
+}
+
+PCIDevicesWidget #frame_pci_device,
+PCIDevicesWidget #frame_pcidevice_info{
+    border: 1px solid rgba(222,222,222,1.000);
+}
+
+PCIDevicesWidget #frame_pci_device_title,
+PCIDevicesWidget #frame_pcidevice_info_title{
+    height: 36;
+    padding: 7px 0 1px 7px;
+    background-color: rgba(222,222,222,1.000);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+
+PCIDevicesWidget #frame_pci_deivce_title QLabel,
+PCIDevicesWidget #frame_pcideivce_info_title QLabel{
+    font-size: 18px;
+    color: black;
+}
+
+PCIDevicesWidget QListView{
+    background-color: rgba(222,222,222,1.000);
+    alternate-background-color: rgba(222,222,222,1.000);
+    color: black;
+    font-size: 15px;
+}
+PCIDevicesWidget QListView::item{
+    min-height: 60px;
+}
+
+PCIDevicesWidget #btn_update{
+    width: 102px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(56,176,213,0.3);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: url(:/images/update.png);
+    padding-left: 10px;
+}
+PCIDevicesWidget #btn_update::hover{
+    background-image: url(:/images/update_hover.png);
+    background-color: rgb(11,62,108);
+    border: 1px solid rgb(71, 190, 249);
+}
+
+PCIDevicesWidget #label_bus_info_tag,
+PCIDevicesWidget #label_caps_tag,
+PCIDevicesWidget #label_bars_tag{
+    min-width: 0;
+    min-height: 19;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: none;
+}

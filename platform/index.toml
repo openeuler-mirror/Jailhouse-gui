@@ -1,0 +1,6 @@
+[cpus.qemu_aarch64]
+    file   = "qemu_aarch64.toml"
+
+[boards.qemu_aarch64_virt]
+    file  = 'qemu_aarch64_virt.toml'
+    cpu   = "qemu_aarch64"

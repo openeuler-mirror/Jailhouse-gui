@@ -1,0 +1,22 @@
+ExportDialog QPushButton{
+    width: 104px;
+    height: 40px;
+    background-color: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    font-size: 15px;
+    color: black;
+}
+ExportDialog QPushButton::hover{
+    background-color: rgba(124,220,250,1.000);
+    border-image: none;
+}
+
+ExportDialog{
+    background-color: rgba(244,244,244,1.000);
+    border: 1px solid rgba(244,244,244,0.3);
+}
+
+ExportDialog QLabel{
+    color: black;
+}
