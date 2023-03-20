@@ -1,0 +1,123 @@
+/*
+QScrollArea{
+    background-color:transparent;
+}
+#scrollAreaWidgetContents{
+    background-color:transparent;
+}
+*/
+
+*{
+    font: 16px "幼圆";
+}
+
+
+/* Home page */
+HomePageWidget #frame_main{
+    background: rgb(244, 244, 244);
+    border-top: 1px solid rgba(244, 244, 244,0.2);
+}
+HomePageWidget #label_home_icon{
+    border-image: url(:/images/home.png);
+}
+HomePageWidget #label_home{
+    font-size: 20px;
+    color: #000000;
+}
+HomePageWidget #btn_new{
+    width: 306;
+    height: 64;
+    border-image: url(:/images/new_config.png);
+
+    padding-top: 150px;
+    color: rgb(178, 178, 178);
+    font-size: 20px;
+    text-align: center;
+}
+HomePageWidget #btn_new::hover{
+    border-image: url(:/images/new_config_hover.png);
+}
+HomePageWidget #btn_open{
+    width: 306;
+    height: 64;
+    border-image: url(:/images/open_config.png);
+
+    padding-top: 150px;
+    color: rgb(178, 178, 178);
+    font-size: 20px;
+    text-align: center;
+}
+HomePageWidget #btn_open::hover{
+    border-image: url(:/images/open_config_hover.png);
+}
+
+/* 创建对话框 */
+CreateDialog #frame_win_title{
+    min-height: 60px;
+    background-color: rgba(192, 192, 192, 1);
+    border: 1px solid rgba(128, 128, 128,0.6);
+}
+CreateDialog #label_win_title{
+    color: white;
+    font-size: 18px;
+}
+CreateDialog #btn_close{
+    width: 40px;
+    height: 40px;
+    border-image: url(:/images/close.png);
+}
+CreateDialog #btn_close::hover{
+    border-image: url(:/images/close_pressed.png);
+}
+CreateDialog #frame_content{
+    background-color: rgba(192, 192, 192, 1);
+    border: 1px solid rgba(128, 128, 128,0.6);
+}
+CreateDialog #frame_content QLabel{
+    font-size: 14px;
+    color: #FFFFFF;
+}
+CreateDialog QLineEdit, CreateDialog QComboBox{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(128, 128, 128,0.6);
+
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+    font-weight: 500;
+}
+CreateDialog #frame_bottom{
+    height: 82px;
+    border-image: url(:/images/create_diag_btn_bg.png);
+}
+CreateDialog #frame_btns QPushButton{
+    width: 104px;
+    height: 40px;
+    background-color: rgba(192, 192, 192, 1);
+    border: 1px solid rgba(128, 128, 128,0.6);
+
+    font-size: 15px;
+    color: #FFFFFF;
+}
+CreateDialog #frame_btns QPushButton::hover{
+    border-image: none;
+    background-color: rgba(124,220,250,1.000);
+}
+CreateDialog #btn_cancel{
+    font-size: 15px;
+    color: rgba(255,255,255,128);
+}
+
+/* 二级菜单 */
+#frame_submenu QPushButton{
+    width: 105px;
+    height: 38px;
+    font-size: 15px;
+    color: black;
+    border-image: none;
+}
+#frame_submenu QPushButton::checked{
+    border-image: none;
+    color: black;
+}

@@ -1,0 +1,111 @@
+/* 主页面 */
+MainPageWidget #frame_toolbar{
+    background-color: rgba(244,244,244,1.000);
+    border-style: solid none solid nond;
+    border-width: 1px;
+    border-color: rgba(244,244,244,1.000);
+}
+
+MainPageWidget #frame_right > #stacked_widget{
+    background-color: rgba(244,244,244,1.000);
+    background-origin: content;
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-image: url(:/images/main_page_shadow.png);
+}
+
+#frame_toolbar QPushButton{
+    width: 53px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(222,222,222,1.000);
+
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-color: rgba(0,0,0,0);
+
+    text-align: right;
+    font-size: 15px;
+    color: black;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#frame_toolbar QPushButton::hover{
+    border-image: none;
+    background-color: rgba(124,220,250,1.000);
+}
+#frame_toolbar #btn_save{
+    background-image: url(:/images/save.png)
+}
+#frame_toolbar #btn_export{
+    background-image: url(:/images/export.png)
+}
+#frame_toolbar #btn_save_and_exit{
+    width: 80;
+}
+#frame_toolbar #label_name{
+    font-size: 20px;
+    color: black;
+}
+#frame_toolbar #label_state{
+    font-size: 16px;
+    color: black;
+}
+
+MainPageWidget #frame_cav{
+    width: 90px;
+    background-color: rgba(222,222,222,1.000);
+}
+#frame_cav QPushButton{
+    width: 80px;
+    height: 30px;
+    padding-top: 70px;
+    padding-left: 10px;
+
+    background-origin: border;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(0,0,0,0);
+
+    color: black;
+    font-size: 14px;
+    text-align: center;
+
+    /* 可以去掉checked状态时的网状阴影 */
+    border: none;
+}
+#frame_cav QPushButton::indicator{
+    width: 0;
+    height: 0;
+}
+#frame_cav QPushButton::hover{
+    background-color: rgba(124,220,250,1.000);
+}
+#frame_cav QPushButton::checked{
+    background-origin: border;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(124,220,250,1.000);
+    color: black;
+    padding-top: 70;
+    text-align: bottom;
+}
+#frame_cav #btn_hw_platform{
+    background-image: url(:/images/hw_platform.png)
+}
+#frame_cav #btn_hw_platform::checked{
+    background-image: url(:/images/hw_platform_selected.png)
+}
+#frame_cav #btn_vm_config{
+    background-image: url(:/images/vm_config.png)
+}
+#frame_cav #btn_vm_config::checked{
+    background-image: url(:/images/vm_config_selected.png)
+}
+#frame_cav #btn_vm_manage{
+    background-image: url(:/images/vm_manage.png)
+}
+#frame_cav #btn_vm_manage::checked{
+    background-image: url(:/images/vm_manage_selected.png)
+}

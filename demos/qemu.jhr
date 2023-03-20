@@ -1,0 +1,182 @@
+{
+    "name": "qemu",
+    "platform": {
+        "cpu": {
+            "system": {
+                "name": "aarch64",
+                "cpu_count": 4,
+                "gic": {
+                    "version": 3,
+                    "gicd_base": 134217728,
+                    "gicr_base": 134873088,
+                    "gicc_base": 135266304,
+                    "gich_base": 134414336,
+                    "gicv_base": 134479872
+                }
+            },
+            "regions": {
+                "smmu": {
+                    "type": "MISC",
+                    "addr": 151322624,
+                    "size": "128KB"
+                },
+                "mmio": {
+                    "type": "MISC",
+                    "addr": 167772160,
+                    "size": "4KB"
+                },
+                "pci_ecam": {
+                    "type": "PCI_ECAM",
+                    "addr": 1056964608,
+                    "size": "16MB"
+                },
+                "pci_mmio": {
+                    "type": "PCI_IO",
+                    "addr": 268435456,
+                    "size": "769984KB"
+                },
+                "pci_pio": {
+                    "type": "PCI_IO",
+                    "addr": 65994752,
+                    "size": "64KB"
+                },
+                "pci_mem64": {
+                    "type": "PCI_MEM",
+                    "addr": 549755813888,
+                    "size": "4GB"
+                }
+            },
+            "devices": {
+                "uart0": {
+                    "addr": 150994944,
+                    "size": 4096,
+                    "type": "pl011",
+                    "irq": [
+                        33
+                    ],
+                    "attr": "pl011"
+                },
+                "rtc": {
+                    "addr": 151060480,
+                    "size": 4096,
+                    "type": "",
+                    "irq": [
+                        34
+                    ],
+                    "attr": ""
+                },
+                "fwcfg": {
+                    "addr": 151126016,
+                    "size": 4096,
+                    "type": "",
+                    "irq": [],
+                    "attr": ""
+                },
+                "gpio": {
+                    "addr": 151191552,
+                    "size": 4096,
+                    "type": "",
+                    "irq": [
+                        39
+                    ],
+                    "attr": ""
+                },
+                "suart": {
+                    "addr": 151257088,
+                    "size": 4096,
+                    "type": "",
+                    "irq": [
+                        40
+                    ],
+                    "attr": ""
+                }
+            }
+        },
+        "board": {
+            "info": {
+                "name": "Qemu Aarch64 Virt",
+                "model": "qemu aarch64 virt",
+                "vendor": "qemu"
+            },
+            "system": {
+                "devices": [],
+                "ram_regions": [
+                    {
+                        "addr": 1073741824,
+                        "size": "2GB"
+                    }
+                ]
+            }
+        }
+    },
+    "jailhouse": {
+        "comm": {
+            "ivshmem_phys": 2164260864,
+            "ivshmem_state_size": 4096,
+            "ivshmem_rw_size": 4096,
+            "ivshmem_out_size": 1048576
+        },
+        "rootcell": {
+            "name": "qemu",
+            "debug_console": "uart0",
+            "vpci_irq_base": 100,
+            "pci_mmconfig": {
+                "base_addr": 268435456,
+                "bus_count": 1,
+                "domain": 1
+            },
+            "hypervisor": {
+                "addr": 2147483648,
+                "size": "16MB"
+            },
+            "system_memory": [
+                {
+                    "addr": 1073741824,
+                    "size": "1GB"
+                }
+            ]
+        },
+        "pci_devices": {
+            "devices": []
+        },
+        "guestcells": {
+            "cells": [
+                {
+                    "unique_id": "aba7d04a-b768-11ed-8d9b-63c855f277fc",
+                    "name": "freertos",
+                    "arch": "AArch64",
+                    "virt_console": true,
+                    "use_virt_cpuid": true,
+                    "ivshmem_virt_addr": 822083584,
+                    "comm_region": 2147483648,
+                    "console": "uart0",
+                    "reset_addr": 0,
+                    "system_memory": [
+                        {
+                            "phys": 2231369728,
+                            "virt": 0,
+                            "size": "64MB",
+                            "comment": "",
+                            "type": "NORMAL"
+                        }
+                    ],
+                    "memmaps": [],
+                    "cpus": [
+                        1
+                    ],
+                    "devices": [
+                        "uart0"
+                    ],
+                    "pci_devices": [],
+                    "runinfo": {
+                        "os_type": "CommonOS",
+                        "os_runinfo": {
+                            "reset_addr": 1073741824,
+                            "images": []
+                        }
+                    }
+                }
+            ]
+        }
+    }
+}

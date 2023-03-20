@@ -1,0 +1,16 @@
+{
+    "qss_files": [
+        ":/style/common.qss",
+        ":/style/new_style.qss",
+        ":/style/main_window.qss",
+        ":/style/main_page.qss",
+        ":/style/cpu_widget.qss",
+        ":/style/board_widget.qss",
+        ":/style/rootcell.qss",
+        ":/style/ivshmem.qss",
+        ":/style/pci_device.qss",
+        ":/style/guestcell.qss",
+        ":/style/export.qss",
+        ":/style/vm_manage.qss"
+    ]
+}

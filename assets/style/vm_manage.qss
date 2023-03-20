@@ -1,0 +1,213 @@
+VMManageWidget QLabel {
+    color: black;
+}
+VMManageWidget QCheckBox {
+    color: black;
+}
+VMManageWidget QGroupBox {
+    color: black;
+}
+
+VMManageWidget #scrollarea_content{
+    background-color: transparent;
+}
+
+VMManageWidget QLineEdit{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+}
+
+VMManageWidget #btn_connect,
+VMManageWidget #frame_hyp_ctrl QPushButton
+{
+    width: 104px;
+    height: 40px;
+    background-color: rgba(222,222,222,1.000);
+    border: 1px solid rgba(11, 44, 80, 1);
+
+    font-size: 16px;
+    color: black;
+}
+VMManageWidget #btn_connect::hover,
+VMManageWidget #frame_hyp_ctrl QPushButton::hover
+{
+    background-color: rgba(124,220,250,1.000);
+    color: black;
+}
+VMManageWidget #btn_connect::checked,
+VMManageWidget #frame_hyp_ctrl QPushButton::checked
+{
+    background-color: rgba(124,220,250,1.000);
+    color: black;
+}
+
+VMManageWidget #frame_runcell,
+VMManageWidget #frame_connect,
+VMManageWidget #frame_cells,
+VMManageWidget #frame_rootcell
+{
+    border: 1px solid rgba(222,222,222,0.3);
+}
+VMManageWidget #frame_runcell_title,
+VMManageWidget #frame_connect_title,
+VMManageWidget #frame_cells_title,
+VMManageWidget #frame_rootcell_title
+{
+    height: 36;
+    padding: 7px 0 1px 7px;
+    background-color: rgba(222,222,222,1.000);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+VMManageWidget #frame_runcell_title QLabel,
+VMManageWidget #frame_connect_title QLabel,
+VMManageWidget #frame_cells_title QLabel,
+VMManageWidget #frame_rootcell_title QLabel
+{
+    font-size: 18px;
+    color: black;
+}
+
+VMManageWidget #btn_cell_flush
+{
+    width: 80px;
+    height: 32px;
+    border-radius: 3px;
+    border: 1px solid rgba(222,222,222,1.000);
+    color: black;
+    font-size: 15px;
+}
+
+VMManageWidget #btn_cell_flush::hover
+{
+    background-color: rgba(222,222,222,1.000);
+    border: 1px solid rgb(71, 190, 249);
+    color: black;
+}
+
+VMManageWidget #label_loadimg_os_tag,
+VMManageWidget #label_loadimg_sd_tag
+{
+    min-width: 17;
+    min-height: 19;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/tag.png);
+}
+
+VMManageWidget #btn_cell_stop,
+VMManageWidget #btn_cell_run
+{
+    width: 80px;
+    height: 30px;
+    background-color: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+    font-size: 16px;
+    color: black;
+}
+VMManageWidget #btn_cell_stop::hover,
+VMManageWidget #btn_cell_run::hover
+{
+    border-image: none;
+    background-color: rgba(124,220,250,1.000);
+    color: black;
+}
+
+VMManageWidget QTextEdit{
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(56,176,213,0.3);
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+}
+
+
+LinuxRunInfoWidget QPushButton{
+    width: 25px;
+    height: 25px;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/file.png);
+}
+LinuxRunInfoWidget QPushButton::hover{
+    background-image: url(:/images/file_hover.png);
+}
+ACoreRunInfoWidget QPushButton{
+    width: 25px;
+    height: 25px;
+    background-origin: content;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/file.png);
+}
+ACoreRunInfoWidget QPushButton::hover{
+    background-image: url(:/images/file_hover.png);
+}
+
+VMManageWidget #frame_runcell_title #label_cellname{
+    color: white;
+}
+
+MemInfoWidget #label_total,
+MemInfoWidget #label_free,
+MemInfoWidget #label_load,
+CPULoadWidget #label_load
+{
+    color: rgb(189, 195, 199);
+    border-width: 0 0 1px 0;
+    border-style: solid;
+    border-color: rgb(20, 48, 94);
+}
+
+#listwidget_rootfs_overlay{
+    border: 1px solid rgba(56,176,213,0.3);
+    background: rgba(222,222,222,1.000);
+}
+#listwidget_rootfs_overlay::item{
+    color: black;
+    min-height: 35px;
+}
+
+CommonOSRunInfoWidget #btn_add_image{
+    width: 28px;
+    height: 28px;
+    background-origin: border;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url(:/images/add.png);
+}
+
+CommonOSRunInfoWidget #btn_add_image::hover{
+    background-image: url(:/images/add_hover.png);
+}
+
+ImageInfoWidget QPushButton{
+    width: 28px;
+    height: 28px;
+    background-origin: border;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+ImageInfoWidget #btn_remove{
+    background-image: url(:/images/remove.png);
+}
+ImageInfoWidget #btn_file{
+    background-image: url(:/images/file.png);
+}
+
+ImageInfoWidget #btn_remove::hover{
+    background-image: url(:/images/remove_hover.png);
+}
+ImageInfoWidget #btn_file::hover{
+    background-image: url(:/images/file_hover.png);
+}

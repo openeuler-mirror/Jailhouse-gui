@@ -1,0 +1,73 @@
+<RCC>
+  <qresource prefix="/">
+    <file>style/default.qss</file>
+    <file>style/common.qss</file>
+    <file>style/new_style.qss</file>
+    <file>style/main_window.qss</file>
+    <file>style/main_page.qss</file>
+    <file>style/cpu_widget.qss</file>
+    <file>style/board_widget.qss</file>
+    <file>style/rootcell.qss</file>
+    <file>style/ivshmem.qss</file>
+    <file>style/pci_device.qss</file>
+    <file>style/new_style.json</file>
+    <file>style/guestcell.qss</file>
+    <file>style/export.qss</file>
+    <file>style/vm_manage.qss</file>
+
+    <file>template/root_cell.mako</file>
+    <file>template/guest_cell.mako</file>
+
+    <file>images/switch-off.png</file>
+    <file>images/switch-on.png</file>
+    <file>images/add.png</file>
+    <file>images/remove.png</file>
+    <file>images/add_hover.png</file>
+    <file>images/remove_hover.png</file>
+    <file>images/clean.png</file>
+
+    <file>images/log.png</file>
+    <file>images/tip.png</file>
+    <file>images/log_hover.png</file>
+    <file>images/tip_hover.png</file>
+
+    <file>images/close.png</file>
+    <file>images/minimize.png</file>
+    <file>images/maximize.png</file>
+    <file>images/close_pressed.png</file>
+    <file>images/minimize_pressed.png</file>
+    <file>images/maximize_pressed.png</file>
+    <file>images/logo.png</file>
+    <file>images/hw_platform.png</file>
+    <file>images/vm_config.png</file>
+    <file>images/vm_manage.png</file>
+    <file>images/hw_platform_selected.png</file>
+    <file>images/vm_config_selected.png</file>
+    <file>images/vm_manage_selected.png</file>
+    <file>images/save.png</file>
+    <file>images/export.png</file>
+    <file>images/back.png</file>
+    <file>images/main_page_shadow.png</file>
+
+    <file>images/home.png</file>
+    <file>images/new_config.png</file>
+    <file>images/new_config_hover.png</file>
+    <file>images/open_config.png</file>
+    <file>images/open_config_hover.png</file>
+    <file>images/single_select.png</file>
+    <file>images/single_select_checked.png</file>
+    <file>images/create_diag_btn_bg.png</file>
+
+    <file>images/dot_bg.png</file>
+    <file>images/selected.png</file>
+    <file>images/tag.png</file>
+    <file>images/update.png</file>
+    <file>images/update_hover.png</file>
+
+    <file>images/file.png</file>
+    <file>images/file_hover.png</file>
+
+    <file>images/check.png</file>
+    <file>images/check_hover.png</file>
+  </qresource>
+</RCC>

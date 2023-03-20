@@ -1,0 +1,61 @@
+
+BoardWidget #scrollarea_content{
+    background-color: transparent;
+}
+
+BoardWidget QLabel{
+    color: black;
+}
+
+BoardWidget QLineEdit, BoardWidget QComboBox{
+    height: 40px;
+    background: rgba(222,222,222,1.000);
+    border: 1px solid rgba(222,222,222,0.3);
+
+    padding-left: 12px;
+    color: black;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+BoardWidget #frame_cpus,
+BoardWidget #frame_system, BoardWidget #frame_mem, BoardWidget #frame_devices{
+    border: 1px solid rgba(244,244,244,1.000);
+}
+
+BoardWidget #frame_cpus_title,
+BoardWidget #frame_system_title, BoardWidget #frame_mem_title, BoardWidget #frame_devices_title{
+    height: 36;
+    padding: 7px 0 1px 7px;
+    background-color: rgba(222,222,222,1.000);
+    background-origin: content;
+    background-position: left;
+    background-repeat: no-repeat;
+    background-image: none;
+}
+
+BoardWidget #frame_cpus_title QLabel,
+BoardWidget #frame_system_title QLabel,
+BoardWidget #frame_mem_title QLabel,
+BoardWidget #frame_devices_title QLabel{
+    font-size: 18px;
+    color: black;
+}
+
+BoardWidget #btn_update_from_plt
+{
+    height: 32px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 3px;
+    border: 1px solid rgba(56,176,213,0.3);
+    color: rgba(95, 169, 239, 160);
+    font-size: 15px;
+}
+
+BoardWidget #btn_update_from_plt::hover
+{
+    background-color: rgba(124,220,250,1.000);
+    border: 1px solid rgba(124,220,250,0.3);
+    color: black;
+}
