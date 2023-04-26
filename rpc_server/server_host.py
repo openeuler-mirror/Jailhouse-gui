@@ -212,8 +212,8 @@ class HostApi(RPCApi):
         if self._uart_server.poll() is not None:
             msg = f'run uart-server failed.'
             print(msg)
-            return RPCApi.Result.error(msg).to_dict()
             self._uart_server = None
+            return RPCApi.Result.error(msg).to_dict()
 
         return RPCApi.Result.success("success").to_dict()
 
