@@ -936,7 +936,6 @@ def generate_linux_dtb(jhr, name):
         for i in range(guestcells.cell_count()):
             print("    ", guestcells.cell_at(i).name())
         return False
-        return False
     import pprint
     pprint.pprint(GuestCellGenerator.gen_kwargs(guestcell))
 
