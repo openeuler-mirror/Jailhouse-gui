@@ -162,7 +162,7 @@ class GuestLinuxDtbGenerator(GeneratorBase):
             return None
         return GuestCellGenerator.gen_guestlinux_dtb(cell)
 
-class ResourceTableGenerator(GeneratorBase):
+class ResourceTableSrcGenerator(GeneratorBase):
     def is_support(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> bool:
         if not isinstance(cell, ResourceGuestCell):
             return False
@@ -171,7 +171,7 @@ class ResourceTableGenerator(GeneratorBase):
         return True
 
     def get_name(self) -> str:
-        return "guestcell资源表"
+        return "资源表源码"
 
     def get_save_name(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> str:
         if isinstance(cell, ResourceRootCell):
@@ -181,7 +181,28 @@ class ResourceTableGenerator(GeneratorBase):
     def get_save_data(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> str:
         if not isinstance(cell, ResourceGuestCell):
             return None
-        return GuestCellGenerator.gen_resource_table(cell)
+        return GuestCellGenerator.gen_resource_table_src(cell)
+
+class ResourceTableBinGenerator(GeneratorBase):
+    def is_support(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> bool:
+        if not isinstance(cell, ResourceGuestCell):
+            return False
+        if isinstance(cell.runinfo().os_runinfo(), LinuxRunInfo):
+            return False
+        return True
+
+    def get_name(self) -> str:
+        return "资源表二进制"
+
+    def get_save_name(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> str:
+        if isinstance(cell, ResourceRootCell):
+            return f'{cell.name()}.rsctable.bin'
+        return ""
+
+    def get_save_data(self, cell: Union[ResourceGuestCell, ResourceRootCell]) -> str:
+        if not isinstance(cell, ResourceGuestCell):
+            return None
+        return GuestCellGenerator.gen_resource_table_bin(cell)
 
 class ExportDialog(QtWidgets.QDialog):
 
@@ -209,7 +230,8 @@ class ExportDialog(QtWidgets.QDialog):
             CellConfigBinGenerator(),
             GuestLinuxDtsGenerator(),
             GuestLinuxDtbGenerator(),
-            ResourceTableGenerator(),
+            ResourceTableSrcGenerator(),
+            ResourceTableBinGenerator(),
         ]
 
         clean_layout(self._ui.frame_gens.layout())

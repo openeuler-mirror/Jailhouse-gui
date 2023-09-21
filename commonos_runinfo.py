@@ -101,7 +101,7 @@ class OSRunInfoWidget(QtWidgets.QWidget):
 
         if rsc_table_mmap is not None:
             self.logger.info(f"load resource table 0x{rsc_table_mmap.virt():x}@{rsc_table_mmap.size()}")
-            rsc_table_bin = GuestCellGenerator.gen_guestlinux_dtb(cell)
+            rsc_table_bin = GuestCellGenerator.gen_resource_table_bin(cell)
             if rsc_table_bin is None:
                 self.logger.error(f'generate resource table dtb failed.')
                 return False

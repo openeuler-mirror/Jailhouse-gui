@@ -1331,6 +1331,32 @@ class LinuxRunInfo(OSRunInfoBase):
         return value
 
 
+class ACoreRunInfo(OSRunInfoBase):
+    def __init__(self) -> None:
+        self.msl = ImageInfo()
+        self.os = ImageInfo()
+        self.app = ImageInfo()
+
+    def name(self):
+        return 'ACore'
+
+    def from_dict(self, value: dict) -> bool:
+        if not isinstance(value, (dict, OrderedDict)):
+            return False
+
+        self.msl.from_dict(value.get("msl"))
+        self.os.from_dict(value.get("os"))
+        self.app.from_dict(value.get("app"))
+        return True
+
+    def to_dict(self) -> Optional[dict]:
+        value = OrderedDict()
+        value['msl'] = self.msl.to_dict()
+        value['os'] = self.os.to_dict()
+        value['app'] = self.app.to_dict()
+        return value
+
+
 class ResourceRunInfo(ResourceBase):
     def __init__(self, parent) -> None:
         super().__init__(parent)

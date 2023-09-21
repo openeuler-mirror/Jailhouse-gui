@@ -206,11 +206,7 @@ class LinuxRunInfoWidget(OSRunInfoWidget):
                 self.logger.error("read devicetree failed.")
                 return False
         else:
-            dts = GuestCellGenerator.gen_guestlinux_dts(cell)
-            if dts is None:
-                self.logger.error("generate dts failed.")
-                return False
-            devicetree = GuestCellGenerator.gen_guestlinux_dtb(dts)
+            devicetree = GuestCellGenerator.gen_guestlinux_dtb(cell)
             if devicetree is None:
                 self.logger.error("generate dtb failed.")
                 return False

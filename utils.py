@@ -112,6 +112,8 @@ class CpioUtil():
         except:
             return None
 
+        return None
+
     def save_as(self, dst: str) -> bool:
         fn = self._filename
         if self._temp_cpio:

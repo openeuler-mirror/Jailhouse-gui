@@ -14,11 +14,12 @@ from forms.ui_cpuload import Ui_CPULoadWidget
 from rpc_server.rpc_client import RPCClient
 from generator import RootCellGenerator
 from jh_resource import Resource, ResourceGuestCellList, ResourceGuestCell, ResourceCPU
-from jh_resource import LinuxRunInfo, CommonOSRunInfo
+from jh_resource import LinuxRunInfo, ACoreRunInfo, CommonOSRunInfo
 from utils import Profile
 
 from commonos_runinfo import OSRunInfoWidget, CommonOSRunInfoWidget
 from linux_runinfo import LinuxRunInfoWidget
+from acore_runinfo import ACoreRunInfoWidget
 
 
 class CellStateItemWidget(QtWidgets.QWidget):
@@ -177,6 +178,7 @@ class VMManageWidget(QtWidgets.QWidget):
         self._ui.lineedit_addr.setText(self.profile_addr.get())
         self._commonos_runinfo = CommonOSRunInfoWidget(self)
         self._linux_runinfo = LinuxRunInfoWidget(self)
+        self._acore_runinfo = ACoreRunInfoWidget(self)
 
         self._os_runinfo_desc = [
             {
@@ -190,6 +192,12 @@ class VMManageWidget(QtWidgets.QWidget):
                 'display': 'Linux',
                 'class'  : LinuxRunInfo,
                 'widget' : self._linux_runinfo,
+            },
+            {
+                'name'   : 'Acore',
+                'display': '天脉(单分区)',
+                'class'  : ACoreRunInfo,
+                'widget' : self._acore_runinfo,
             },
         ]
 
@@ -358,7 +366,9 @@ class VMManageWidget(QtWidgets.QWidget):
             return
         self._ui.btn_cell_run.setEnabled(False)
         os_runinfo = self._current_cell.runinfo().os_runinfo()
-        if isinstance(os_runinfo, LinuxRunInfo):
+        if isinstance(os_runinfo, ACoreRunInfo):
+            self._acore_runinfo.run(self._current_cell)
+        elif isinstance(os_runinfo, LinuxRunInfo):
             self._linux_runinfo.run(self._current_cell)
         elif isinstance(os_runinfo, CommonOSRunInfo):
             self._commonos_runinfo.run(self._current_cell)
