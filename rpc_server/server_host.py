@@ -9,7 +9,6 @@ from pci_device import PCIDevice
 import psutil
 import time
 from jailhouse import Jailhouse, TempFile
-from ivsm_p2p import IvsmP2P
 import subprocess
 
 mypath = os.path.split(os.path.realpath(__file__))[0]
@@ -177,11 +176,13 @@ class HostApi(RPCApi):
         return result.to_dict()
 
     def get_guest_status(self, idx) -> dict:
-        status = IvsmP2P.guestos_status(idx)
-        if status is None:
-            return RPCApi.Result.error("failed").to_dict()
-        print(status.to_dict())
-        return RPCApi.Result.success(status.to_dict()).to_dict()
+        status = {
+            "online": true,
+            "mem_total": 50,
+            "mem_used": 50,
+            "cpu_load": 50 
+        }
+        return RPCApi.Result.success(status).to_dict()
 
     def start_uart_server(self, config: str) -> dict:
         if self._uart_server is not None:
@@ -226,7 +227,6 @@ class HostApi(RPCApi):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    IvsmP2P.init()
     addr = "tcp://0.0.0.0:4240"
     s = RPCServer(addr, HostApi())
     logging.info(f"server running {addr}.")

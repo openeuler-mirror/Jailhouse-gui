@@ -8,7 +8,7 @@ from jh_resource import ResourceJailhouse, ResourceRootCell
 from jh_resource import ResourceGuestCellList, ResourceGuestCell
 from jh_resource import MemRegion, MemMap, MemRegionList
 from jh_resource import ResourceMgr
-from jh_resource import CommonOSRunInfo, LinuxRunInfo
+from jh_resource import CommonOSRunInfo, LinuxRunInfo, ACoreRunInfo
 
 # TODO
 # ERROR 仅仅一个device table
@@ -323,6 +323,39 @@ class Checklist(object):
             item = CheckResult(f"检查 Linux 运行配置")
             if guestcell.virt_cpuid():
                 item.failed("运行Guest Linux系统不能配置虚拟CPUID")
+
+        # 天脉系统
+        elif isinstance(os_runinfo, ACoreRunInfo):
+            item = CheckResult(f"检查 {cellname} MSL 镜像")
+            msl = os_runinfo.msl
+            if os.path.isfile(rsc.abs_path(msl.filename)):
+                size = os.path.getsize(rsc.abs_path(msl.filename))
+                if not virt_regions.contains(MemRegion(msl.addr,size)):
+                    item.failed("镜像内容未包含在虚拟地址空间中")
+            else:
+                item.failed("MSL镜像不存在")
+            if msl.addr != 0:
+                item.failed("MSL地址因该为0")
+
+            item = CheckResult(f"检查 {cellname} OS 镜像")
+            os_img = os_runinfo.os
+            if os.path.isfile(rsc.abs_path(os_img.filename)):
+                size = os.path.getsize(rsc.abs_path(os_img.filename))
+                if not virt_regions.contains(MemRegion(os_img.addr,size)):
+                    item.failed("镜像内容未包含在虚拟地址空间中")
+            else:
+                item.failed("OS镜像不存在")
+
+            if os_runinfo.app.enable:
+                item = CheckResult(f"检查 {cellname} APP 镜像")
+                app_img = os_runinfo.app
+                if os.path.isfile(rsc.abs_path(app_img.filename)):
+                    size = os.path.getsize(rsc.abs_path(app_img.filename))
+                    if not virt_regions.contains(MemRegion(app_img.addr,size)):
+                        item.failed("镜像内容未包含在虚拟地址空间中")
+                else:
+                    item.failed("APP镜像不存在")
+
             results.append(item)
 
         return results

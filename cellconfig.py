@@ -15,6 +15,7 @@ JAILHOUSE_CELL_DESC_SIGNATURE = b"JHCELL"
 JAILHOUSE_CELL_PASSIVE_COMMREG	= 0x00000001
 JAILHOUSE_CELL_TEST_DEVICE	= 0x00000002
 JAILHOUSE_CELL_AARCH32		= 0x00000004
+JAILHOUSE_CELL_VIRT_CPUID	= 0x00000100
 
 JAILHOUSE_CELL_VIRTUAL_CONSOLE_PERMITTED = 0x40000000
 JAILHOUSE_CELL_VIRTUAL_CONSOLE_ACTIVATE = 0x80000000
@@ -120,13 +121,36 @@ class jailhouse_irqchip(ctypes.Structure):
 	    ('pin_bitmap', _U32*4),
     ]
 
-class jailhouse_pci_device(ctypes.Structure):
+class jailhouse_pci_device_r13(ctypes.Structure):
     _pack_ = 1
     _fields_ = [
         ('type', _U8),
         ('iommu', _U8),
         ('domain', _U16),
         ('bdf', _U16),
+        ('bar_mask', _U32*6),
+        ('caps_start', _U16),
+        ('num_caps', _U16),
+        ('num_msi_vectors', _U8),
+        # ctypes不支持位域， [0]: 64bit  [1]: maskable
+        ('msi', _U8),
+        ('num_msix_vectors', _U16),
+        ('msix_region_size', _U16),
+        ('msix_address', _U64),
+        ('shmem_regions_start', _U32),
+        ('shmem_dev_id', _U8),
+        ('shmem_peers', _U8),
+        ('shmem_protocol', _U16),
+    ]
+
+class jailhouse_pci_device_r14(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        ('type', _U8),
+        ('iommu', _U8),
+        ('domain', _U16),
+        ('bdf', _U16),
+        ('virt_bdf', _U32),
         ('bar_mask', _U32*6),
         ('caps_start', _U16),
         ('num_caps', _U16),
@@ -212,6 +236,7 @@ class jailhouse_system(ctypes.LittleEndianStructure):
         _pack_ = 1
         _fields_ = [
             ('pci_mmconfig_base', _U64),
+            ('pci_machine_mmconfig_base', _U64),
             ('pci_mmconfig_end_bus', _U8),
             ('pci_is_virtual', _U8),
             ('pci_domain', _U16),
@@ -238,5 +263,17 @@ class Revision13:
     cell_desc = jailhouse_cell_desc
     memory = jailhouse_memory
     irqchip = jailhouse_irqchip
-    pci_device = jailhouse_pci_device
+    pci_device = jailhouse_pci_device_r13
+    pci_capability = jailhouse_pci_capability
+
+
+class Revision14:
+    revision = 14
+    sys_signature = JAILHOUSE_SYSTEM_SIGNATURE
+    cell_signature = JAILHOUSE_CELL_DESC_SIGNATURE
+    system = jailhouse_system
+    cell_desc = jailhouse_cell_desc
+    memory = jailhouse_memory
+    irqchip = jailhouse_irqchip
+    pci_device = jailhouse_pci_device_r14
     pci_capability = jailhouse_pci_capability

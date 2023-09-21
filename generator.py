@@ -10,7 +10,7 @@ from utils import get_template_path
 import click
 import fdt
 import cellconfig
-from cellconfig import Revision13
+from cellconfig import Revision14
 
 
 logger = logging.getLogger("generator")
@@ -277,7 +277,7 @@ class RootCellGenerator(object):
         cpu = rsc.platform().cpu()
         rootcell = rsc.jailhouse().rootcell()
         kwargs = cls.gen_kwargs(rsc)
-        Rev = Revision13
+        Rev = Revision14
 
         # len(devices)+len(board_mems)+len(regions)+ivshmem['count']+2}
         regions: List[JailhouseMemory] = list()
@@ -299,6 +299,7 @@ class RootCellGenerator(object):
 
         for mem in cls.get_board_mem(rsc):
             flag = JailhouseMemory.MEM_READ | JailhouseMemory.MEM_WRITE | JailhouseMemory.MEM_EXECUTE
+            print(mem)
             regions.append(JailhouseMemory(mem['addr'], mem['addr'], mem['size'], flag))
 
         for dev in cls.get_devices(rsc):
@@ -306,6 +307,8 @@ class RootCellGenerator(object):
             regions.append(JailhouseMemory(dev['addr'], dev['addr'], dev['size'], flag))
 
         for mem in cpu.regions():
+            if mem.type() is mem.Type.DRAM:
+                continue
             flag = JailhouseMemory.MEM_READ | JailhouseMemory.MEM_WRITE | JailhouseMemory.MEM_IO
             regions.append(JailhouseMemory(mem.addr(), mem.addr(), mem.size(), flag))
 
@@ -627,7 +630,7 @@ class GuestCellGenerator(object):
 
     @classmethod
     def gen_config_bin(cls, guestcell: ResourceGuestCell) -> bytes:
-        Rev = Revision13
+        Rev = Revision14
         cpu: ResourceCPU = guestcell.find(ResourceCPU)
         rootcell: ResourceRootCell = guestcell.find(ResourceRootCell)
 
@@ -695,6 +698,8 @@ class GuestCellGenerator(object):
             cell.flags = cell.flags + cellconfig.JAILHOUSE_CELL_VIRTUAL_CONSOLE_PERMITTED
         if guestcell.arch() is ARMArch.AArch32:
             cell.flags = cell.flags + cellconfig.JAILHOUSE_CELL_AARCH32
+        if guestcell.virt_cpuid():
+            cell.flags = cell.flags + cellconfig.JAILHOUSE_CELL_VIRT_CPUID
         cell.cpu_reset_address = guestcell.reset_addr()
         cell.cpu_set_size = ctypes.sizeof(config.cpus)
         cell.num_memory_regions = ctypes.sizeof(config.mem_regions)//ctypes.sizeof(config.mem_regions[0])
@@ -780,15 +785,19 @@ class GuestCellGenerator(object):
         return txt.strip()
 
     @classmethod
-    def gen_guestlinux_dtb(cls, guestcell: ResourceGuestCell) -> Optional[bytes]:
-        dts = cls.gen_guestlinux_dts(guestcell)
-        if dts is None:
-            return None
+    def dts_to_dtb(cls, dts):
         x = fdt.parse_dts(dts)
         return x.to_dtb(version=17)
 
     @classmethod
-    def gen_resource_table(cls, guestcell: ResourceGuestCell) -> Optional[str]:
+    def gen_guestlinux_dtb(cls, guestcell: ResourceGuestCell) -> Optional[bytes]:
+        dts = cls.gen_guestlinux_dts(guestcell)
+        if dts is None:
+            return None
+        return cls.dts_to_dtb(dts)
+
+    @classmethod
+    def gen_resource_table_src(cls, guestcell: ResourceGuestCell) -> Optional[str]:
         kwargs = cls.gen_kwargs(guestcell)
         if kwargs is None:
             return None
@@ -801,6 +810,13 @@ class GuestCellGenerator(object):
             return None
 
         return txt.strip()
+
+    @classmethod
+    def gen_resource_table_bin(cls, guestcell: ResourceGuestCell) -> Optional[bytes]:
+        src = cls.gen_resource_table_src(guestcell)
+        if src is None:
+            return None
+        return cls.dts_to_dtb(src)
 
 
 def test():
@@ -822,7 +838,7 @@ def test():
 
     dts = GuestCellGenerator.gen_guestlinux_dts(guestcell.cell_at(0))
     print(dts)
-    GuestCellGenerator.gen_guestlinux_dtb(dts)
+    GuestCellGenerator.gen_guestlinux_dtb(guestcell)
 
     #xx = RootCellGenerator.gen_config_source(rsc)
     #print(xx)
@@ -850,13 +866,13 @@ def cli_resource_table(jhr, name, output):
             print("    ", guestcells.cell_at(i).name())
         return False
 
-    txt = GuestCellGenerator.gen_resource_table(guestcell)
+    txt = GuestCellGenerator.gen_resource_table_src(guestcell)
     if txt is None:
         logging.error("generate failed.")
         return False
     print(txt)
 
-    dtb = GuestCellGenerator.gen_guestlinux_dtb(txt)
+    dtb = GuestCellGenerator.dts_to_dtb(txt)
     if dtb is None:
         logging.error("generate dtb failed.")
         return False
@@ -905,7 +921,7 @@ def generate_linux_dtb(jhr, name, output):
 
     print(GuestCellGenerator.gen_kwargs(guestcell))
     print(dts)
-    dtb = GuestCellGenerator.gen_guestlinux_dtb(dts)
+    dtb = GuestCellGenerator.gen_guestlinux_dtb(guestcell)
     if dtb is None:
         logging.error(f"generate dtb failed.")
         return False
@@ -935,6 +951,7 @@ def generate_linux_dtb(jhr, name):
         guestcells = rsc.jailhouse().guestcells()
         for i in range(guestcells.cell_count()):
             print("    ", guestcells.cell_at(i).name())
+        return False
         return False
     import pprint
     pprint.pprint(GuestCellGenerator.gen_kwargs(guestcell))

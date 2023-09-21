@@ -43,6 +43,7 @@ from pci_device_widget import PCIDeviceWidget, PCIDeviceListWidget
 from guestcell_widget import GuestCellWidget, GuestCellsWidget
 from vm_manage_widget import VMManageWidget
 
+from remote_widget import RemoteWidget
 from except_widget import ExceptDialog
 from tip_widget import TipWidget
 from check_widget import CheckWidget
@@ -60,6 +61,193 @@ class DockWidget(QtWidgets.QDockWidget):
         self.setWindowTitle(name)
         if title is not None:
             self.setTitleBarWidget(title)
+
+
+class MainUI(QtWidgets.QMainWindow):
+    logger = logging.getLogger("MainUI")
+
+    def __init__(self):
+        super().__init__()
+
+        self._ui = Ui_MainWindow()
+        self._ui.setupUi(self)
+
+        self.setWindowTitle(f"Jailhouse资源配置工具  {VERSION}")
+        self._ui.tabWidget.removeTab(1)
+        self._ui.tabWidget.removeTab(1)
+
+        self._log_widget = LogWidget()
+        self._resource_tree = ResourceTreeWidget()
+        self._remote_widget = RemoteWidget()
+        self._tip_widget = TipWidget()
+        self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, DockWidget(self._tip_widget, "提示"))
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, DockWidget(self._resource_tree, "资源树"))
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, DockWidget(self._remote_widget, "远程管理"))
+
+        self._black_widget = QtWidgets.QWidget()
+        self._cpu_widget = CPUWidget()
+        self._board_widget = BoardWidget()
+        self._rootcell_widget = RootCellWidget()
+        self._comm_widget = IVShMemWidget()
+        self._jh_widget = JailhouseWidget()
+        self._pci_device_widget = PCIDeviceWidget()
+        self._pci_devices_widget = PCIDeviceListWidget()
+        self._guestcell_widget = GuestCellWidget()
+        self._guestcells_widget = GuestCellsWidget()
+
+        self._ui.stackedwidget_resource.addWidget(self._black_widget)
+        self._ui.stackedwidget_resource.addWidget(self._cpu_widget)
+        self._ui.stackedwidget_resource.addWidget(self._board_widget)
+        self._ui.stackedwidget_resource.addWidget(self._rootcell_widget)
+        self._ui.stackedwidget_resource.addWidget(self._comm_widget)
+        self._ui.stackedwidget_resource.addWidget(self._jh_widget)
+        self._ui.stackedwidget_resource.addWidget(self._pci_device_widget)
+        self._ui.stackedwidget_resource.addWidget(self._pci_devices_widget)
+        self._ui.stackedwidget_resource.addWidget(self._guestcell_widget)
+        self._ui.stackedwidget_resource.addWidget(self._guestcells_widget)
+
+        self._ui.action_new.triggered.connect(self._on_create)
+        self._ui.action_open.triggered.connect(self._on_open)
+        self._ui.action_save.triggered.connect(self._on_save)
+        self._ui.action_saveas.triggered.connect(self._on_saveas)
+        self._ui.action_export.triggered.connect(self._on_export)
+
+        self._resource_tree.item_clicked.connect(self._on_item_clicked)
+        self._resource_tree.item_double_clicked.connect(self._on_item_double_clicked)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        rsc_mgr = ResourceMgr.get_instance()
+        modified = list()
+        for i in range(len(rsc_mgr)):
+            rsc = rsc_mgr[i]
+            if rsc.is_modified(True):
+                modified.append(rsc)
+        if len(modified) == 0:
+            return super().closeEvent(event)
+
+        names = ', '.join(map(lambda x: x.name(), modified))
+        text = f"修改但未保存 {names}, 是否保存文件"
+        btns = QtWidgets.QMessageBox.Cancel | QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        result = QtWidgets.QMessageBox.question(self, "关闭程序", text, btns)
+        if result == QtWidgets.QMessageBox.Cancel:
+            event.ignore()
+            return
+        if result == QtWidgets.QMessageBox.Yes:
+            for rsc in modified:
+                self._save(rsc)
+        return super().closeEvent(event)
+
+
+    def _on_create(self):
+        x = CreateDialog()
+        x.exec_()
+        self._resource_tree.expand_all()
+
+    def _on_open(self):
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, "打开文件", "", "Jailhouse resource(*.jhr)")[0]
+        if len(filename) == 0:
+            return
+
+        rsc = ResourceMgr.get_instance().open(filename)
+        if rsc is None:
+            self.logger.error(f"open {filename} failed")
+            return
+        rsc.set_prop(PROP_FILENAME, filename)
+        ResourceMgr.get_instance().set_current(rsc)
+        self._resource_tree.expand_all()
+
+    def _save(self, rsc):
+        filename = rsc.get_prop(PROP_FILENAME)
+        if filename is None:
+            fn = os.path.join(os.getcwd(), "untitled.jhr")
+            filename = QtWidgets.QFileDialog.getSaveFileName(self, f"保存文件 {rsc.name()}", fn, "Jailhouse resource(*.jhr)")[0]
+            if len(filename) == 0:
+                return
+
+        if ResourceMgr.save(rsc, filename):
+            self.logger.info(f"save resource to {filename}")
+        else:
+            self.logger.error("save failed.")
+
+        rsc.set_prop(PROP_FILENAME, filename)
+
+    def _on_save(self):
+        rsc = ResourceMgr.get_instance().get_current()
+        if rsc is None:
+            return
+
+        self._save(rsc)
+
+    def _on_saveas(self):
+        rsc = ResourceMgr.get_instance().get_current()
+        if rsc is None:
+            return
+
+        fn = os.path.join(os.getcwd(), f"saveas_{int(time.time())}.jhr")
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, "保存文件", fn, "Jailhouse resource(*.jhr)")[0]
+        if len(filename) == 0:
+            return
+
+        if ResourceMgr.save(rsc, filename):
+            self.logger.info(f"save resource to {filename}")
+        else:
+            self.logger.error("save failed.")
+
+    def _on_export(self):
+        x = ExportDialog()
+        x.exec_()
+
+    def _on_generate(self):
+        rsc = ResourceMgr.get_instance().get_current()
+        if rsc is None:
+            self.logger.info("当前无可用资源")
+            return
+        src_rootcell = generate_root_cell(rsc)
+        if src_rootcell is None:
+            self.logger.error("生成root cell配置源码失败")
+            return
+
+        formatter = HtmlFormatter(full=True, noclasses=True, style="igor", linenos=True)
+        src_html = highlight(src_rootcell, get_lexer_by_name("C"), formatter)
+        self._ui.textbrowser_source.setHtml(src_html)
+
+    def _on_item_clicked(self, rsc):
+        if isinstance(rsc, ResourceCPU):
+            self._cpu_widget.set_cpu(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._cpu_widget)
+        elif isinstance(rsc, ResourceBoard):
+            self._board_widget.set_board(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._board_widget)
+        elif isinstance(rsc, ResourceRootCell):
+            self._rootcell_widget.set_rootcell(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._rootcell_widget)
+        elif isinstance(rsc, ResourceComm):
+            self._comm_widget.set_comm(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._comm_widget)
+        elif isinstance(rsc, ResourceJailhouse):
+            self._jh_widget.set_jailhosue(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._jh_widget)
+        elif isinstance(rsc, ResourcePCIDeviceList):
+            self._pci_devices_widget.set_resource(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._pci_devices_widget)
+        elif isinstance(rsc, ResourcePCIDevice):
+            self._pci_device_widget.set_resource(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._pci_device_widget)
+        elif isinstance(rsc, ResourceGuestCell):
+            self._guestcell_widget.set_resource(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._guestcell_widget)
+        elif isinstance(rsc, ResourceGuestCellList):
+            self._guestcells_widget.set_guestcells(rsc)
+            self._ui.stackedwidget_resource.setCurrentWidget(self._guestcells_widget)
+        else:
+            self._ui.stackedwidget_resource.setCurrentWidget(self._black_widget)
+
+    def _on_item_double_clicked(self, rsc):
+        # 选择当前激活的Resource
+        if isinstance(rsc, Resource):
+            if rsc is not ResourceMgr.get_instance().get_current():
+                self.logger.info(f"set current resource {rsc.name()}")
+                ResourceMgr.get_instance().set_current(rsc)
 
 
 class HomePageWidget(QtWidgets.QWidget):
@@ -330,6 +518,9 @@ if __name__ == '__main__':
         app.setStyleSheet(qss_txt)
     else:
         logging.error("load qss failed.")
+
+    #mainui = MainUI()
+    #mainui.show()
 
     mainui = MainWindow()
     window = FramelessWindow(mainui)
