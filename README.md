@@ -2,7 +2,7 @@
 
 ## 介绍
 
-Jailhouse-gui用于配置和管理 Jailhouse 的图形用户界面（GUI）工具，Jailhouse 是一种基于 Linux 的管理程序，可将多核处理器分割成独立单元，用于实时关键应用程序。此说明目前仅适用于openEuler边缘/服务器版本。
+Jailhouse-gui用于配置和管理 Jailhouse 的图形用户界面（GUI）工具，Jailhouse 是一种基于 Linux 的管理程序，可将多核处理器分割成独立单元，用于实时关键应用程序。
 
 ## 软件架构
 
@@ -81,23 +81,57 @@ python ./build.py deploy
 | D2000_rtt.jhr    | 提供一套完整的root cell和guest cell的配置条目，<br />使用Jailhouse-gui工具直接打开，通常用户不用<br />修改此配置文件。                                             | Jailhouse-gui/examlpes |
 | rtthread_a64.bin | guest cell运行RTOS，rtthread_a64.bin是我们<br />提供的guest cell镜像，使用Jailhouse-gui可以<br />直接一键部署。guest cell使用的串口1，我们需<br />要提前接好串口。 | Jailhouse-gui/examlpes |
 
-Jailhouse-gui需要和目标机上的rpc_server服务配合使用。首先需要在目标机上启动rpc_server服务。
+Jailhouse-gui需要和目标机上的rpc_server服务配合使用，并且需要对目标机的内核所能使用的内存做限制。例如：可以通过在系统启动参数中添加"mem=3G"(具体限制到多大需根据目标机的内存的实际大小进行调整)，来达成此目的。其次需要在目标机上启动rpc_server服务。
 
-#### 部署rpc_server服务
+#### 部署rpc_server服务(openEuler边缘/服务器版本)
 
 1、将rpc_server文件夹拷贝到目标机上。
 2、安装rpc_server需要的依赖。
 
 ```
 yum install -y python3-devel python3-mako
-pip install zerorpc==0.6.3 psutil==5.9.4 -i https://pypi.tuna.tsinghua.edu.cn/simple
+cd rpc_server
+pip3 install -r requirements_rpc.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip3 install psutil==5.9.4 -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+3、将rpc_server/jailhouse_bin中的软连接指向正确的jailhouse文件。
+4、启动rpc_server，可让其后台运行。
+
+```
+python3 server_host.py &
 ```
 
-3、启动rpc_server，可让其后台运行。
+#### 部署rpc_server服务(openEuler Embedded版本)
+
+1、需要在编译的文件系统中包含有如下软件包。
+
+```
+python3 
+python3-pip 
+python3-mako 
+python3-certifi 
+python3-dev 
+python3-psutil
+ca-certificates 
+flex 
+bison 
+bc 
+rsync 
+```
+
+2、将rpc_server文件夹拷贝到目标机上。
+3、安装rpc_server需要的依赖。
 
 ```
 cd rpc_server
-python server_host.py &
+pip3 install -r requirements_rpc.txt -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
+```
+
+4、将rpc_server/jailhouse_bin中的软连接指向正确的jailhouse文件。
+5、启动rpc_server，可让其后台运行。
+
+```
+python3 server_host.py &
 ```
 
 #### 快速部署root cel

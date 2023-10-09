@@ -748,14 +748,14 @@
                     "reset_addr": 2148532224,
                     "system_memory": [
                         {
-                            "phys": 137573171200,
+                            "phys": 146163105792,
                             "virt": 268435456,
                             "size": "1MB",
                             "comment": "",
                             "type": "RESOURCE_TABLE"
                         },
                         {
-                            "phys": 137574219776,
+                            "phys": 146164154368,
                             "virt": 2147483648,
                             "size": "127MB",
                             "comment": "",
