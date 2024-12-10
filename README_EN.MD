@@ -46,3 +46,26 @@ python ./build.py deploy
 cd Jailhouse-gui/dist
 ./resource-tool-nonversion
 ```
+#### Compilation and packaging under Windows platform
+
+1. Download the source code of Jailhouse gui.
+
+```
+git clone  https://gitee.com/openeuler/Jailhouse-gui.git
+```
+
+2. Install the dependencies required for Jalhouse gui, which can be found in the requirements _ in. txt file.
+
+```
+cd Jailhouse-gui
+pip install -r requirements_win.txt -i  https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+3. Package Jailhouse gui.
+
+```
+python ./build.py deploy
+```
+
+4. Start Jalhouse gui.
+Double click the resource tool executable file in the dist directory.
