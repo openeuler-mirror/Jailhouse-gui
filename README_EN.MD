@@ -131,3 +131,51 @@ pip3 install -r requirements_rpc.txt -i  http://mirrors.aliyun.com/pypi/simple/ 
 ```
 python3 server_host.py &
 ```
+#### Quickly deploy root cel
+
+1. After opening the Jailhouse gui tool, enter the main interface and select to open D2000_rtt.jhr.
+
+![1695285775043](image/README/1695285775043.png)
+
+![1695285815984](image/README/1695285815984.png)
+
+2. Click on "Virtual Machine Management", enter the IP address of the target machine, default port 4240, no need to modify, click on "Connect" - "Start" respectively, and deploy the root cell with one click.
+
+![1695285870856](image/README/1695285870856.png)
+
+3. On the target machine, you can enter commands to view the running status of jailhouse.
+
+```
+jailhouse cell list
+```
+
+
+![1695283338843](image/README/1695283338843.png)
+
+#### Quickly deploy guest cells
+
+After deploying the root cell, we can start deploying the guest cell. First, connect serial port 1 and open this serial device in the terminal tool.
+
+1. On the "Virtual Machine Management" page, select "rtthread_1" from the "Virtual Machine Status List", then select "rtthread_a64.bin" for the image file. No other parameters need to be modified, and finally click "Start".
+
+![1695285907354](image/README/1695285907354.png)
+
+2. Output the startup information of rt thread in serial port 1 and be able to use shell commands normally.
+
+![1695285977093](image/README/1695285977093.png)
+
+## Participate and contribute
+
+1. Fork's own warehouse JAILHOUSE VNet REVISION
+2. Create a new Feat_xxx branch
+3. Submit code
+4. Create a new Pull Request
+
+## trick
+
+1. Use self described uxxx.md to
+2. Gitee Registrar client [blog. gitee. com]（ https://blog.gitee.com )
+3[ https://gitee.com/explore ]( https://gitee.com/explore ）Open a project on Gitee
+4.[GVP]( https://gitee.com/gvp ）All in all
+5. Gitee Registry[ https://gitee.com/help ]( https://gitee.com/help )
+6. Gitee interface personal belongings[ https://gitee.com/gitee-stars/ ]( https://gitee.com/gitee-stars/ )
