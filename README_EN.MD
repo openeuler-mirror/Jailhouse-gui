@@ -99,3 +99,35 @@ pip3 install psutil==5.9.4 -i  https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 python3 server_host.py &
 ```
+#### Deploy rpc_server service (openEuler Embedded version)
+
+1. The following software packages need to be included in the compiled file system.
+
+```
+python3 
+python3-pip 
+python3-mako 
+python3-certifi 
+python3-dev 
+python3-psutil
+ca-certificates 
+flex 
+bison 
+bc 
+rsync 
+```
+
+2. Copy the rpc_server folder to the target machine.
+3. The dependencies required for installing rpc_server.
+
+```
+cd rpc_server
+pip3 install -r requirements_rpc.txt -i  http://mirrors.aliyun.com/pypi/simple/  --trusted-host mirrors.aliyun.com
+```
+
+4. Point the soft link in rpc_server/jailhouse_bin to the correct jailhouse file.
+5. Start rpc_server to allow it to run in the background.
+
+```
+python3 server_host.py &
+```
