@@ -1,3 +1,19 @@
+"""
+Jailhouse配置生成器模块。
+
+本模块提供了用于生成Jailhouse虚拟机监控器配置的功能，包括:
+- 根单元格(Root Cell)配置生成
+- 客户单元格(Guest Cell)配置生成
+- Linux设备树配置生成
+- 资源表配置生成
+
+主要类:
+- JailhouseMemory: 内存区域配置类
+- GeneratorCommon: 通用配置生成功能
+- RootCellGenerator: 根单元格配置生成器
+- GuestCellGenerator: 客户单元格配置生成器
+"""
+
 import logging
 from typing import TypedDict, List, Optional
 import ctypes
@@ -17,6 +33,26 @@ logger = logging.getLogger("generator")
 
 
 class JailhouseMemory:
+    """
+    Jailhouse内存区域配置类。
+    
+    定义了内存区域的物理地址、虚拟地址、大小和访问权限标志。
+    
+    属性:
+        MEM_READ: 读权限
+        MEM_WRITE: 写权限
+        MEM_EXECUTE: 执行权限
+        MEM_DMA: DMA访问权限
+        MEM_IO: IO访问权限
+        MEM_COMM_REGION: 通信区域标志
+        MEM_LOADABLE: 可加载标志
+        MEM_ROOTSHARED: 与根单元格共享标志
+        MEM_NO_HUGEPAGES: 禁用大页标志
+        MEM_IO_UNALIGNED: 允许非对齐IO访问
+        MEM_IO_WIDTH_SHIFT: IO宽度位移值
+        MEM_IO_8/16/32/64: IO访问宽度定义
+        MEM_RESOURCE_TABLE: 资源表标志
+    """
     MEM_READ           = 0x0001
     MEM_WRITE          = 0x0002
     MEM_EXECUTE        = 0x0004
@@ -42,8 +78,31 @@ class JailhouseMemory:
 
 
 class GeneratorCommon(object):
+    """
+    配置生成器通用功能类。
+    
+    提供了生成Jailhouse配置时需要的通用功能。
+    """
+    
     @staticmethod
     def get_ivshmem(rsc: Resource, cell: Optional[ResourceGuestCell]=None ) -> Optional[dict]:
+        """
+        获取IVSHMEM(Inter-VM Shared Memory)配置。
+        
+        Args:
+            rsc: 资源对象
+            cell: 客户单元格对象，可选
+            
+        Returns:
+            包含IVSHMEM配置信息的字典，包括:
+            - 物理地址
+            - 虚拟地址
+            - 状态区大小
+            - 读写区大小
+            - 输出区大小
+            - 单元格数量
+            - 单元格ID
+        """
         phys = rsc.jailhouse().ivshmem().ivshmem_phys()
         virt = phys
         cell_id = 0
@@ -73,14 +132,39 @@ class GeneratorCommon(object):
 
 
 class RootCellGenerator(object):
+    """
+    根单元格配置生成器。
+    
+    负责生成Jailhouse根单元格(Root Cell)的配置，包括:
+    - 设备内存区域配置
+    - GIC(Generic Interrupt Controller)配置
+    - PCI设备配置
+    - 调试控制台配置
+    - 系统内存配置
+    """
+    
     def __init__(self) -> None:
         pass
 
     @classmethod
     def get_devices(cls, rsc: Resource) -> List:
         """
-        获取设备内存区域列表
-        :return: list of dict(name, addr, size)
+        获取设备内存区域列表。
+        
+        处理设备内存映射，包括:
+        1. 获取所有设备的基本信息
+        2. 按地址排序设备列表
+        3. 合并相邻的设备内存区域
+        4. 处理内存对齐要求
+        
+        Args:
+            rsc: 资源对象
+            
+        Returns:
+            包含设备信息的字典列表，每个字典包含:
+            - name: 设备名称
+            - addr: 设备基地址
+            - size: 设备内存大小
         """
         devices = list()
         # 设备
@@ -126,6 +210,20 @@ class RootCellGenerator(object):
 
     @classmethod
     def get_regions(cls, rsc: Resource) -> Optional[list]:
+        """
+        获取内存区域列表。
+        
+        获取系统中定义的内存区域信息，不包括DRAM区域。
+        
+        Args:
+            rsc: 资源对象
+            
+        Returns:
+            内存区域信息列表，每个元素包含:
+            - name: 区域名称
+            - addr: 区域基地址
+            - size: 区域大小
+        """
         regions: List[ResourceCPU.Region] = rsc.platform().cpu().regions()
         values = list()
         for region in regions:
@@ -142,9 +240,19 @@ class RootCellGenerator(object):
     @classmethod
     def get_debug_console(cls, rsc: Resource) -> Optional[dict]:
         """
-        获取调试终端信息
-        :param rsc: dict(addr, size)
-        :return:
+        获取调试控制台配置。
+        
+        查找并配置用于调试输出的串口设备。
+        
+        Args:
+            rsc: 资源对象
+            
+        Returns:
+            调试控制台配置字典，包含:
+            - addr: 控制台设备地址
+            - size: 设备内存大小
+            - type: 设备类型
+            如果未找到调试控制台则返回None
         """
         debug_console = rsc.jailhouse().rootcell().get_debug_console()
         if debug_console is None:
@@ -389,9 +497,38 @@ class RootCellGenerator(object):
 
 
 class GuestCellGenerator(object):
+    """
+    客户单元格配置生成器。
+    
+    负责生成Jailhouse客户单元格(Guest Cell)的配置，包括:
+    - 客户单元格基本配置
+    - CPU分配配置
+    - 内存映射配置
+    - 设备分配配置
+    - PCI设备配置
+    - Linux设备树生成
+    - 资源表生成
+    """
+    
     logger = logging.getLogger("GuestCellGenerator")
+    
     @classmethod
     def get_cpu(cls, guestcell: ResourceGuestCell) -> Optional[dict]:
+        """
+        获取客户单元格的CPU配置。
+        
+        计算分配给客户单元格的CPU核心的位图。
+        
+        Args:
+            guestcell: 客户单元格资源对象
+            
+        Returns:
+            CPU配置字典，包含:
+            - count: CPU总数
+            - cpus: 分配的CPU核心列表
+            - values: CPU位图值列表
+            - bitmap: CPU位图的十六进制字符串表示
+        """
         rsc_cpu: ResourceCPU = guestcell.find(ResourceCPU)
         cpu_count = rsc_cpu.cpu_count()
         cpus = guestcell.cpus()
@@ -420,6 +557,19 @@ class GuestCellGenerator(object):
 
     @classmethod
     def get_gic_bitmaps(cls, guestcell: ResourceGuestCell) -> list:
+        """
+        获取GIC(Generic Interrupt Controller)中断位图。
+        
+        为客户单元格配置中断控制器访问权限。
+        
+        Args:
+            guestcell: 客户单元格资源对象
+            
+        Returns:
+            中断位图列表，每个元素包含:
+            - bitmap: 中断位图值
+            - comment: 位图说明
+        """
         cpu: ResourceCPU = guestcell.find(ResourceCPU)
         rootcell: ResourceRootCell = guestcell.find(ResourceRootCell)
 
@@ -454,6 +604,24 @@ class GuestCellGenerator(object):
 
     @classmethod
     def get_system(cls, guestcell: ResourceGuestCell) -> Optional[dict]:
+        """
+        获取客户单元格的系统配置。
+        
+        配置客户单元格的基本系统参数。
+        
+        Args:
+            guestcell: 客户单元格资源对象
+            
+        Returns:
+            系统配置字典，包含:
+            - virt_console: 虚拟控制台配置
+            - virt_cpuid: 虚拟CPU ID配置
+            - arch: 架构类型
+            - vpci_irq_base: 虚拟PCI中断基址
+            - irq_bitmaps: 中断位图
+            - reset_addr: 复位向量地址
+            - cpu_name: CPU名称
+        """
         cpu: ResourceCPU = guestcell.find(ResourceCPU)
         rootcell: ResourceRootCell = guestcell.find(ResourceRootCell)
         irq_bitmaps = cls.get_gic_bitmaps(guestcell)
@@ -615,6 +783,17 @@ class GuestCellGenerator(object):
 
     @classmethod
     def gen_config_source(cls, guestcell: ResourceGuestCell) -> Optional[str]:
+        """
+        生成客户单元格的C语言配置源代码。
+        
+        使用模板生成客户单元格的配置源代码。
+        
+        Args:
+            guestcell: 客户单元格资源对象
+            
+        Returns:
+            配置源代码字符串，失败返回None
+        """
         kwargs = cls.gen_kwargs(guestcell)
         if kwargs is None:
             return None
@@ -630,6 +809,17 @@ class GuestCellGenerator(object):
 
     @classmethod
     def gen_config_bin(cls, guestcell: ResourceGuestCell) -> bytes:
+        """
+        生成客户单元格的二进制配置数据。
+        
+        生成可以直接加载到Jailhouse的二进制配置数据。
+        
+        Args:
+            guestcell: 客户单元格资源对象
+            
+        Returns:
+            二进制配置数据
+        """
         Rev = Revision14
         cpu: ResourceCPU = guestcell.find(ResourceCPU)
         rootcell: ResourceRootCell = guestcell.find(ResourceRootCell)
@@ -845,6 +1035,7 @@ def test():
 
 @click.group()
 def cli():
+    """Jailhouse配置生成工具命令行接口。"""
     pass
 
 
@@ -853,6 +1044,14 @@ def cli():
 @click.argument("name")
 @click.argument("output")
 def cli_resource_table(jhr, name, output):
+    """
+    生成资源表配置。
+    
+    Args:
+        jhr: Jailhouse资源文件路径
+        name: 客户单元格名称
+        output: 输出文件路径(.dts或.dtb)
+    """
     rsc = ResourceMgr.get_instance().open(jhr)
     if rsc is None:
         logging.error("open failed.")
@@ -898,6 +1097,14 @@ def cli_resource_table(jhr, name, output):
 @click.argument("name")
 @click.argument("output")
 def generate_linux_dtb(jhr, name, output):
+    """
+    生成Linux设备树配置。
+    
+    Args:
+        jhr: Jailhouse资源文件路径
+        name: 客户单元格名称
+        output: 输出文件路径(.dts或.dtb)
+    """
     import logging
 
     rsc = ResourceMgr.get_instance().open(jhr)
@@ -937,6 +1144,13 @@ def generate_linux_dtb(jhr, name, output):
 @click.argument("jhr")
 @click.argument("name")
 def generate_linux_dtb(jhr, name):
+    """
+    打印客户单元格配置参数。
+    
+    Args:
+        jhr: Jailhouse资源文件路径
+        name: 客户单元格名称
+    """
     import logging
 
     rsc = ResourceMgr.get_instance().open(jhr)
@@ -960,6 +1174,13 @@ def generate_linux_dtb(jhr, name):
 @click.argument("jhr")
 @click.argument("output")
 def generate_linux_dtb(jhr, output: str):
+    """
+    生成根单元格配置。
+    
+    Args:
+        jhr: Jailhouse资源文件路径
+        output: 输出文件路径(.c或.cell)
+    """
     import logging
 
     rsc = ResourceMgr.get_instance().open(jhr)
@@ -998,6 +1219,14 @@ def generate_linux_dtb(jhr, output: str):
 @click.argument("name")
 @click.argument("output")
 def generate_linux_dtb(jhr, name, output: str):
+    """
+    生成客户单元格配置。
+    
+    Args:
+        jhr: Jailhouse资源文件路径
+        name: 客户单元格名称
+        output: 输出文件路径(.c或.cell)
+    """
     import logging
 
     rsc = ResourceMgr.get_instance().open(jhr)
