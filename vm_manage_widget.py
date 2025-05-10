@@ -23,7 +23,22 @@ from acore_runinfo import ACoreRunInfoWidget
 
 
 class CellStateItemWidget(QtWidgets.QWidget):
+    """
+    单元格状态项部件。
+    
+    用于在列表中显示单元格的名称和运行状态。
+    
+    Attributes:
+        _ui: 用户界面对象。
+    """
     def __init__(self, name, parent=None):
+        """
+        初始化单元格状态项部件。
+        
+        Args:
+            name: 单元格名称。
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
 
         self.setFixedHeight(40)
@@ -33,14 +48,48 @@ class CellStateItemWidget(QtWidgets.QWidget):
         self._ui.label_state.setText('未知状态')
 
     def name(self):
+        """
+        获取单元格名称。
+        
+        Returns:
+            str: 单元格名称。
+        """
         return self._ui.label_name.text()
 
     def set_status(self, status: str):
+        """
+        设置单元格状态。
+        
+        Args:
+            status: 单元格状态文本。
+        """
         self._ui.label_state.setText(status)
 
 
 class CPULoadWidget(QtWidgets.QWidget):
+    """
+    CPU负载显示部件。
+    
+    显示CPU负载的曲线图和当前负载值。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _layout: 图表布局。
+        _axis_time: 时间轴。
+        _axis_load: 负载轴。
+        _chart: 图表对象。
+        _series: 数据系列。
+        _chartview: 图表视图。
+    """
     def __init__(self, parent=None):
+        """
+        初始化CPU负载显示部件。
+        
+        创建图表、坐标轴和数据系列。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_CPULoadWidget()
         self._ui.setupUi(self)
@@ -77,6 +126,15 @@ class CPULoadWidget(QtWidgets.QWidget):
         self._chart.setTheme(QtCharts.QChart.ChartTheme.ChartThemeBlueCerulean)
 
     def add_data(self, now_sec, load):
+        """
+        添加负载数据点。
+        
+        添加一个时间点的CPU负载数据，更新图表显示。
+        
+        Args:
+            now_sec: 当前时间戳(秒)。
+            load: CPU负载值(0-1之间的浮点数)。
+        """
         now = QtCore.QDateTime.fromMSecsSinceEpoch(int(now_sec*1000))
         self._ui.label_load.setText(f"{load*100:.1f} %")
         self._series.append(now_sec*1000, load)
@@ -87,14 +145,49 @@ class CPULoadWidget(QtWidgets.QWidget):
         self._chartview.update()
 
     def set_cpucount(self, count):
+        """
+        设置CPU核心数。
+        
+        更新显示的CPU核心数。
+        
+        Args:
+            count: CPU核心数。
+        """
         self._ui.label_count.setText(f"{count}")
 
     def reset(self):
+        """
+        重置图表。
+        
+        清空所有数据点。
+        """
         self._series.clear()
 
 
 class MemInfoWidget(QtWidgets.QWidget):
+    """
+    内存信息显示部件。
+    
+    显示内存使用情况的曲线图和当前内存使用值。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _layout: 图表布局。
+        _axis_time: 时间轴。
+        _axis_load: 内存使用率轴。
+        _chart: 图表对象。
+        _series: 数据系列。
+        _chartview: 图表视图。
+    """
     def __init__(self, parent=None):
+        """
+        初始化内存信息显示部件。
+        
+        创建图表、坐标轴和数据系列。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
 
         self._ui = Ui_MemInfoWidget()
@@ -131,6 +224,16 @@ class MemInfoWidget(QtWidgets.QWidget):
         self._chart.setTheme(QtCharts.QChart.ChartTheme.ChartThemeBlueCerulean)
 
     def add_data(self, now_sec, total, free):
+        """
+        添加内存数据点。
+        
+        添加一个时间点的内存使用数据，更新图表显示。
+        
+        Args:
+            now_sec: 当前时间戳(秒)。
+            total: 总内存大小(字节)。
+            free: 可用内存大小(字节)。
+        """
         def size_to_str(size):
             if size < 1024*1024:
                 return f'{size/1024:.03f} KB'
@@ -152,11 +255,37 @@ class MemInfoWidget(QtWidgets.QWidget):
 
 
 class VMManageWidget(QtWidgets.QWidget):
+    """
+    虚拟机管理界面部件。
+    
+    提供虚拟机的监控和管理功能，包括启动/停止虚拟机、查看性能指标等。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _root_cpuload: CPU负载显示部件。
+        _root_meminfo: 内存信息显示部件。
+        _timer: 定时器，用于定期更新状态。
+        _resource: 当前资源对象。
+        _current_cell: 当前选中的客户单元格。
+        _client: RPC客户端实例。
+        _last_status: 上次获取的状态信息。
+        _os_runinfo_desc: 操作系统运行信息描述列表。
+        logger: 日志记录器。
+        profile_addr: 远程地址配置项。
+    """
     logger = logging.getLogger("VMManage")
 
     profile_addr = Profile.Item('remote_addr', 'tcp://127.0.0.1:4240')
 
     def __init__(self, parent=None):
+        """
+        初始化虚拟机管理界面部件。
+        
+        创建子部件、设置信号连接和初始化界面。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_VMManageWidget()
         self._ui.setupUi(self)
@@ -227,6 +356,14 @@ class VMManageWidget(QtWidgets.QWidget):
         self._timer.timeout.connect(self._on_timeout)
 
     def set_resource(self, rsc: Resource):
+        """
+        设置要管理的资源。
+        
+        更新虚拟机列表并显示资源信息。
+        
+        Args:
+            rsc: 资源对象，如果为None则清空显示。
+        """
         if self._resource is rsc:
             return
         self._resource = None
@@ -237,16 +374,41 @@ class VMManageWidget(QtWidgets.QWidget):
         self._resource = rsc
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        """
+        处理调整大小事件。
+        
+        当窗口大小改变时，调整操作系统运行信息部件的高度。
+        
+        Args:
+            event: 调整大小事件对象。
+        """
         super().resizeEvent(event)
         self._ui.stackedwidget_os_runinfo.setFixedHeight(self._ui.stackedwidget_os_runinfo.currentWidget().sizeHint().height())
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """
+        处理显示事件。
+        
+        Args:
+            event: 显示事件对象。
+        """
         return super().showEvent(event)
 
     def hideEvent(self, event: QtGui.QHideEvent) -> None:
+        """
+        处理隐藏事件。
+        
+        Args:
+            event: 隐藏事件对象。
+        """
         return super().hideEvent(event)
 
     def _on_hyp_start(self):
+        """
+        处理启动虚拟机监控器事件。
+        
+        生成根单元格配置，启用Jailhouse，并启动UART服务器。
+        """
         if self._resource is None:
             return
 
@@ -293,11 +455,21 @@ class VMManageWidget(QtWidgets.QWidget):
             self.logger.warning(f"generate jhr json failed.")
 
     def _on_cell_flush(self):
+        """
+        处理刷新单元格列表事件。
+        
+        更新虚拟机列表显示。
+        """
         if self._resource is None:
             return
         self._update_vm_list(self._resource)
 
     def _on_hyp_stop(self):
+        """
+        处理停止虚拟机监控器事件。
+        
+        禁用Jailhouse并停止UART服务器。
+        """
         if self._resource is None:
             return
 
@@ -316,6 +488,11 @@ class VMManageWidget(QtWidgets.QWidget):
             self.logger.warning("stop uart server failed.")
 
     def _on_timeout(self):
+        """
+        处理定时器超时事件。
+        
+        定期从服务器获取状态信息，更新单元格状态和性能指标图表。
+        """
         if self._resource is None:
             return
         if not self._client.is_connected():
@@ -362,6 +539,11 @@ class VMManageWidget(QtWidgets.QWidget):
         self._last_status = status
 
     def _on_cell_run(self):
+        """
+        处理运行单元格事件。
+        
+        根据当前选中单元格的操作系统类型，调用相应的运行方法。
+        """
         if self._current_cell is None:
             return
         self._ui.btn_cell_run.setEnabled(False)
@@ -377,6 +559,11 @@ class VMManageWidget(QtWidgets.QWidget):
         self._ui.btn_cell_run.setEnabled(True)
 
     def _on_cell_stop(self):
+        """
+        处理停止单元格事件。
+        
+        销毁当前选中的单元格。
+        """
         if self._current_cell is None:
             return
 
@@ -385,6 +572,14 @@ class VMManageWidget(QtWidgets.QWidget):
         self._client.destroy_cell(name)
 
     def _update_vm_list(self, rsc: Resource):
+        """
+        更新虚拟机列表。
+        
+        从资源中获取客户单元格列表，并更新列表显示。
+        
+        Args:
+            rsc: 资源对象，如果为None则清空列表。
+        """
         if rsc is None:
             self._ui.listwidget_cells.clear()
             return
@@ -404,6 +599,14 @@ class VMManageWidget(QtWidgets.QWidget):
         self._ui.listwidget_cells.setFixedHeight(fixed_height)
 
     def _update_current_cell(self, cell: ResourceGuestCell):
+        """
+        更新当前选中的单元格。
+        
+        显示选中单元格的配置信息和运行信息。
+        
+        Args:
+            cell: 客户单元格对象，如果为None则隐藏单元格配置区域。
+        """
         self._current_cell = None
         if cell is None:
             self._ui.frame_runcell.hide()
@@ -423,6 +626,11 @@ class VMManageWidget(QtWidgets.QWidget):
         self._current_cell = cell
 
     def _on_runinfo_value_changed(self):
+        """
+        处理运行信息值变化事件。
+        
+        当操作系统运行信息改变时，更新单元格的运行信息并调整界面高度。
+        """
         if self._current_cell is None:
             return
         widget: OSRunInfoWidget = self._ui.stackedwidget_os_runinfo.currentWidget()
@@ -430,6 +638,14 @@ class VMManageWidget(QtWidgets.QWidget):
         self._ui.stackedwidget_os_runinfo.setFixedHeight(self._ui.stackedwidget_os_runinfo.currentWidget().sizeHint().height())
 
     def _on_current_cell_changed(self, arg):
+        """
+        处理当前单元格改变事件。
+        
+        当用户在列表中选择不同的单元格时，更新显示的单元格信息。
+        
+        Args:
+            arg: 当前行索引。
+        """
         item = self._ui.listwidget_cells.currentItem()
         if item is None:
             self._update_current_cell(None)
@@ -443,6 +659,14 @@ class VMManageWidget(QtWidgets.QWidget):
         self._update_current_cell(cell)
 
     def _on_os_type_changed(self, index):
+        """
+        处理操作系统类型改变事件。
+        
+        当用户选择不同的操作系统类型时，切换显示相应的配置界面。
+        
+        Args:
+            index: 下拉列表的索引。
+        """
         display  = self._ui.combobox_os_type.currentText()
         if display is None or len(display)==0:
             return
@@ -466,9 +690,22 @@ class VMManageWidget(QtWidgets.QWidget):
             runinfo.set_os_runinfo(widget.runinfo())
 
     def _on_addr_edit_finished(self):
+        """
+        处理地址编辑完成事件。
+        
+        保存用户输入的服务器地址到配置。
+        """
         self.profile_addr.set(self._ui.lineedit_addr.text().strip())
 
     def _on_state_changed(self, sender):
+        """
+        处理连接状态变化事件。
+        
+        当RPC客户端连接状态改变时，更新界面显示。
+        
+        Args:
+            sender: 信号发送者。
+        """
         if sender is not self._client:
             return
 
@@ -488,6 +725,11 @@ class VMManageWidget(QtWidgets.QWidget):
         self._ui.frame_runcell.setVisible(is_connected)
 
     def _on_connect(self):
+        """
+        处理连接按钮点击事件。
+        
+        连接到或断开与远程服务器的连接。
+        """
         if not self._client.is_connected():
             if not self._client.connect(self._ui.lineedit_addr.text().strip(), timeout=10):
                 self.logger.error("连接失败")
