@@ -13,7 +13,23 @@ from forms.ui_pci_bar_widget import Ui_PCIBarWidget
 
 
 class PCICapWidget(QtWidgets.QWidget):
+    """
+    PCI设备能力显示部件。
+    
+    用于显示PCI设备的单个能力(Capability)信息，包括ID、描述、起始地址和长度。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _cap: PCI能力对象。
+    """
     def __init__(self, cap: ResourcePCIDevice.PCICap, parent=None):
+        """
+        初始化PCI能力显示部件。
+        
+        Args:
+            cap: PCI能力对象，包含能力的ID、起始地址、长度等信息。
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCICapWidget()
         self._ui.setupUi(self)
@@ -38,7 +54,23 @@ class PCICapWidget(QtWidgets.QWidget):
 
 
 class PCIBarWidget(QtWidgets.QWidget):
+    """
+    PCI基址寄存器(BAR)显示部件。
+    
+    用于显示PCI设备的单个基址寄存器信息，包括地址、大小、类型和掩码。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _bar: PCI基址寄存器对象。
+    """
     def __init__(self, bar: ResourcePCIDevice.PCIBar, parent=None):
+        """
+        初始化PCI基址寄存器显示部件。
+        
+        Args:
+            bar: PCI基址寄存器对象，包含地址、大小、类型和掩码等信息。
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCIBarWidget()
         self._ui.setupUi(self)
@@ -51,7 +83,24 @@ class PCIBarWidget(QtWidgets.QWidget):
 
 
 class PCIDeviceWidget(QtWidgets.QWidget):
+    """
+    PCI设备详细信息显示部件。
+    
+    用于显示单个PCI设备的详细信息，包括设备基本信息、能力和基址寄存器。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _caps_layout: 能力列表的布局。
+        _bars_layout: 基址寄存器列表的布局。
+        _pcidev: PCI设备对象。
+    """
     def __init__(self, parent=None):
+        """
+        初始化PCI设备详细信息显示部件。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCIDeviceWidget()
         self._ui.setupUi(self)
@@ -62,10 +111,24 @@ class PCIDeviceWidget(QtWidgets.QWidget):
         self._pcidev: Optional[ResourcePCIDevice] = None
 
     def set_resource(self, rsc: ResourcePCIDevice):
+        """
+        设置要显示的PCI设备资源。
+        
+        Args:
+            rsc: PCI设备资源对象。
+        """
         self._pcidev = rsc
         self._update()
 
     def _update(self):
+        """
+        更新界面显示。
+        
+        根据当前的PCI设备对象更新界面上的信息。
+        
+        Returns:
+            bool: 如果更新成功则返回True，否则返回False。
+        """
         if self._pcidev is None:
             return False
 
@@ -89,7 +152,22 @@ class PCIDeviceWidget(QtWidgets.QWidget):
 
 
 class PCIDeviceItemWidget(QtWidgets.QWidget):
+    """
+    PCI设备列表项显示部件。
+    
+    用于在设备列表中显示单个PCI设备的简要信息。
+    
+    Attributes:
+        _ui: 用户界面对象。
+    """
     def __init__(self, rsc: ResourcePCIDevice, parent=None):
+        """
+        初始化PCI设备列表项显示部件。
+        
+        Args:
+            rsc: PCI设备资源对象。
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCIDeviceItemWidget()
         self._ui.setupUi(self)
@@ -98,9 +176,26 @@ class PCIDeviceItemWidget(QtWidgets.QWidget):
         self._ui.label_path.setText(rsc.path())
 
 class PCIDeviceListWidget(QtWidgets.QWidget):
+    """
+    PCI设备列表显示部件。
+    
+    用于显示多个PCI设备的列表。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _item_layout: 列表项的布局。
+        _pcidevs: PCI设备列表对象。
+        logger: 日志记录器。
+    """
     logger = logging.getLogger("PCIDeviceListWidget")
 
     def __init__(self, parent=None):
+        """
+        初始化PCI设备列表显示部件。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCIDevicesWidget()
         self._ui.setupUi(self)
@@ -114,10 +209,21 @@ class PCIDeviceListWidget(QtWidgets.QWidget):
         client.state_changed.connect(self._on_rpc_client_state_changed)
 
     def set_resource(self, resource: ResourcePCIDeviceList):
+        """
+        设置要显示的PCI设备列表资源。
+        
+        Args:
+            resource: PCI设备列表资源对象。
+        """
         self._pcidevs = resource
         self._update()
 
     def _update(self):
+        """
+        更新界面显示。
+        
+        清空布局并根据当前的PCI设备列表更新界面。
+        """
         # 清空
         clean_layout(self._item_layout)
         if self._pcidevs is None:
@@ -129,6 +235,14 @@ class PCIDeviceListWidget(QtWidgets.QWidget):
             self._item_layout.addWidget(item_widget)
 
     def _on_rpc_client_state_changed(self, sender):
+        """
+        处理RPC客户端状态变化事件。
+        
+        当RPC客户端连接状态改变时，更新更新按钮的可用性。
+        
+        Args:
+            sender: 信号发送者。
+        """
         if RPCClient.get_instance() is not sender:
             return
 
@@ -136,6 +250,11 @@ class PCIDeviceListWidget(QtWidgets.QWidget):
         self._ui.btn_update.setEnabled(client.is_connected())
 
     def _on_update(self):
+        """
+        处理更新按钮点击事件。
+        
+        从RPC服务器获取最新的PCI设备列表，并更新显示。
+        """
         client: RPCClient = RPCClient.get_instance()
         if not client.is_connected():
             return
@@ -173,9 +292,25 @@ class PCIDeviceListWidget(QtWidgets.QWidget):
         self._update()
 
 class PCIDevicesWidget(QtWidgets.QWidget):
+    """
+    PCI设备管理部件。
+    
+    用于显示和管理PCI设备列表，提供设备详情查看和更新功能。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _pcidevs: PCI设备列表对象。
+        logger: 日志记录器。
+    """
     logger = logging.getLogger("PCIDeviceListWidget")
 
     def __init__(self, parent=None):
+        """
+        初始化PCI设备管理部件。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self._ui = Ui_PCIDevicesWidget()
         self._ui.setupUi(self)
@@ -196,10 +331,21 @@ class PCIDevicesWidget(QtWidgets.QWidget):
         self._ui.tablewidget_bars.setSizeAdjustPolicy(QtWidgets.QScrollArea.AdjustToContents)
 
     def set_pci_devices(self, resource: ResourcePCIDeviceList):
+        """
+        设置要显示的PCI设备列表。
+        
+        Args:
+            resource: PCI设备列表资源对象。
+        """
         self._pcidevs = resource
         self._update()
 
     def _update(self):
+        """
+        更新界面显示。
+        
+        清空列表并根据当前的PCI设备列表更新界面显示。
+        """
         self._ui.listwidget_pci_devices.clear()
         if self._pcidevs is None:
             return
@@ -216,6 +362,14 @@ class PCIDevicesWidget(QtWidgets.QWidget):
             self._update_pci_device_info(self._pcidevs.device_at(0))
 
     def _update_pci_device_info(self, pci_dev: ResourcePCIDevice):
+        """
+        更新PCI设备详细信息显示。
+        
+        根据选定的PCI设备更新界面上的详细信息。
+        
+        Args:
+            pci_dev: 要显示的PCI设备对象。
+        """
         self._ui.lineedit_domain.clear()
         self._ui.lineedit_bus.clear()
         self._ui.lineedit_device.clear()
@@ -262,6 +416,14 @@ class PCIDevicesWidget(QtWidgets.QWidget):
 
 
     def _on_rpc_client_state_changed(self, sender):
+        """
+        处理RPC客户端状态变化事件。
+        
+        当RPC客户端连接状态改变时，更新更新按钮的可用性。
+        
+        Args:
+            sender: 信号发送者。
+        """
         if RPCClient.get_instance() is not sender:
             return
 
@@ -269,6 +431,14 @@ class PCIDevicesWidget(QtWidgets.QWidget):
         self._ui.btn_update.setEnabled(client.is_connected())
 
     def _on_pcidevice_selected(self, row):
+        """
+        处理PCI设备选择事件。
+        
+        当用户在列表中选择一个PCI设备时，更新设备详细信息显示。
+        
+        Args:
+            row: 选中的行索引。
+        """
         if self._pcidevs is None:
             return
         pci_dev = self._pcidevs.device_at(row)
@@ -277,6 +447,11 @@ class PCIDevicesWidget(QtWidgets.QWidget):
         self._update_pci_device_info(pci_dev)
 
     def _on_update(self):
+        """
+        处理更新按钮点击事件。
+        
+        从RPC服务器获取最新的PCI设备列表，并更新显示。
+        """
         client: RPCClient = RPCClient.get_instance()
         if not client.is_connected():
             return
