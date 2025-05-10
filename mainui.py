@@ -55,7 +55,24 @@ PROP_FILENAME = "filename"
 
 
 class DockWidget(QtWidgets.QDockWidget):
+    """
+    自定义可停靠窗口部件。
+    
+    用于创建带有指定标题和内容部件的可停靠窗口。
+    
+    Attributes:
+        widget: 要显示的内容部件。
+    """
     def __init__(self, widget: QtWidgets.QWidget, name, title=None, parent=None):
+        """
+        初始化停靠窗口部件。
+        
+        Args:
+            widget: 要在停靠窗口中显示的部件。
+            name: 停靠窗口的名称。
+            title: 自定义标题栏部件，默认为None使用标准标题栏。
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self.setWidget(widget)
         self.setWindowTitle(name)
@@ -64,9 +81,27 @@ class DockWidget(QtWidgets.QDockWidget):
 
 
 class MainUI(QtWidgets.QMainWindow):
+    """
+    主界面类(旧版)。
+    
+    实现Jailhouse资源配置工具的主界面，包含资源树、配置编辑区和日志显示等功能。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _log_widget: 日志显示部件。
+        _resource_tree: 资源树部件。
+        _remote_widget: 远程管理部件。
+        _tip_widget: 提示信息部件。
+        logger: 日志记录器。
+    """
     logger = logging.getLogger("MainUI")
 
     def __init__(self):
+        """
+        初始化主界面。
+        
+        设置界面布局，创建和添加各个子部件，连接信号和槽。
+        """
         super().__init__()
 
         self._ui = Ui_MainWindow()
@@ -116,6 +151,14 @@ class MainUI(QtWidgets.QMainWindow):
         self._resource_tree.item_double_clicked.connect(self._on_item_double_clicked)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """
+        处理窗口关闭事件。
+        
+        在关闭窗口前检查是否有未保存的修改，提示用户保存。
+        
+        Args:
+            event: 关闭事件对象。
+        """
         rsc_mgr = ResourceMgr.get_instance()
         modified = list()
         for i in range(len(rsc_mgr)):
@@ -139,11 +182,21 @@ class MainUI(QtWidgets.QMainWindow):
 
 
     def _on_create(self):
+        """
+        处理创建新资源事件。
+        
+        打开创建对话框，用于创建新的资源。
+        """
         x = CreateDialog()
         x.exec_()
         self._resource_tree.expand_all()
 
     def _on_open(self):
+        """
+        处理打开资源文件事件。
+        
+        显示文件选择对话框，打开并加载选中的资源文件。
+        """
         filename = QtWidgets.QFileDialog.getOpenFileName(self, "打开文件", "", "Jailhouse resource(*.jhr)")[0]
         if len(filename) == 0:
             return
@@ -157,6 +210,14 @@ class MainUI(QtWidgets.QMainWindow):
         self._resource_tree.expand_all()
 
     def _save(self, rsc):
+        """
+        保存资源到文件。
+        
+        如果资源没有关联文件名，则显示文件保存对话框。
+        
+        Args:
+            rsc: 要保存的资源对象。
+        """
         filename = rsc.get_prop(PROP_FILENAME)
         if filename is None:
             fn = os.path.join(os.getcwd(), "untitled.jhr")
@@ -172,6 +233,11 @@ class MainUI(QtWidgets.QMainWindow):
         rsc.set_prop(PROP_FILENAME, filename)
 
     def _on_save(self):
+        """
+        处理保存当前资源事件。
+        
+        保存当前选中的资源到文件。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is None:
             return
@@ -179,6 +245,11 @@ class MainUI(QtWidgets.QMainWindow):
         self._save(rsc)
 
     def _on_saveas(self):
+        """
+        处理另存为事件。
+        
+        将当前资源保存到新文件。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is None:
             return
@@ -194,10 +265,20 @@ class MainUI(QtWidgets.QMainWindow):
             self.logger.error("save failed.")
 
     def _on_export(self):
+        """
+        处理导出事件。
+        
+        显示导出对话框，将资源导出为其他格式。
+        """
         x = ExportDialog()
         x.exec_()
 
     def _on_generate(self):
+        """
+        处理生成源码事件。
+        
+        生成当前资源的root cell配置源码并显示。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is None:
             self.logger.info("当前无可用资源")
@@ -212,6 +293,14 @@ class MainUI(QtWidgets.QMainWindow):
         self._ui.textbrowser_source.setHtml(src_html)
 
     def _on_item_clicked(self, rsc):
+        """
+        处理资源项点击事件。
+        
+        根据点击的资源类型，显示相应的配置界面。
+        
+        Args:
+            rsc: 被点击的资源对象。
+        """
         if isinstance(rsc, ResourceCPU):
             self._cpu_widget.set_cpu(rsc)
             self._ui.stackedwidget_resource.setCurrentWidget(self._cpu_widget)
@@ -243,6 +332,14 @@ class MainUI(QtWidgets.QMainWindow):
             self._ui.stackedwidget_resource.setCurrentWidget(self._black_widget)
 
     def _on_item_double_clicked(self, rsc):
+        """
+        处理资源项双击事件。
+        
+        设置双击的资源为当前激活资源。
+        
+        Args:
+            rsc: 被双击的资源对象。
+        """
         # 选择当前激活的Resource
         if isinstance(rsc, Resource):
             if rsc is not ResourceMgr.get_instance().get_current():
@@ -251,8 +348,23 @@ class MainUI(QtWidgets.QMainWindow):
 
 
 class HomePageWidget(QtWidgets.QWidget):
+    """
+    首页部件。
+    
+    显示欢迎界面，提供创建新资源和打开现有资源的功能。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        logger: 日志记录器。
+    """
     logger = logging.getLogger("homepage")
     def __init__(self, parent):
+        """
+        初始化首页部件。
+        
+        Args:
+            parent: 父窗口部件。
+        """
         super().__init__(parent)
         self._ui = Ui_HomePageWidget()
         self._ui.setupUi(self)
@@ -261,10 +373,20 @@ class HomePageWidget(QtWidgets.QWidget):
         self._ui.btn_open.clicked.connect(self._on_open)
 
     def _on_create(self):
+        """
+        处理创建新资源事件。
+        
+        打开创建对话框，用于创建新的资源。
+        """
         x = CreateDialog()
         x.exec_()
 
     def _on_open(self):
+        """
+        处理打开资源文件事件。
+        
+        显示文件选择对话框，打开并加载选中的资源文件。
+        """
         filename = QtWidgets.QFileDialog.getOpenFileName(self, "打开文件", "", "Jailhouse resource(*.jhr)")[0]
         if len(filename) == 0:
             return
@@ -278,10 +400,30 @@ class HomePageWidget(QtWidgets.QWidget):
 
 
 class MainPageWidget(QtWidgets.QWidget):
+    """
+    主页面部件。
+    
+    显示资源编辑界面，包含硬件平台、虚拟机配置和虚拟机管理等功能页面。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _blank_page: 空白页面。
+        _hw_plt_page: 硬件平台配置页面。
+        _vm_config_page: 虚拟机配置页面。
+        _vm_manage_page: 虚拟机管理页面。
+        signal_close: 关闭信号。
+        logger: 日志记录器。
+    """
     logger = logging.getLogger('MainPage')
     signal_close = QtCore.Signal()
 
     def __init__(self, parent):
+        """
+        初始化主页面部件。
+        
+        Args:
+            parent: 父窗口部件。
+        """
         super().__init__(parent)
         self._ui = Ui_MainPageWidget()
         self._ui.setupUi(self)
@@ -307,6 +449,12 @@ class MainPageWidget(QtWidgets.QWidget):
         ResourceSignals.modified.connect(self._on_rsc_modified)
 
     def set_resource(self, rsc: Resource):
+        """
+        设置要显示的资源。
+        
+        Args:
+            rsc: 资源对象，如果为None则清空显示。
+        """
         self._ui.label_name.clear()
         self._ui.label_state.clear()
         self._hw_plt_page.set_platform(None)
@@ -323,11 +471,28 @@ class MainPageWidget(QtWidgets.QWidget):
             self._ui.label_state.setText("已修改")
 
     def _on_rsc_modified(self, sender, **kwargs):
+        """
+        处理资源修改事件。
+        
+        当资源被修改时，更新界面显示状态。
+        
+        Args:
+            sender: 信号发送者。
+            **kwargs: 关键字参数。
+        """
         if not isinstance(sender, ResourceBase):
             return
         self._ui.label_state.setText("已修改")
 
     def _save(self, rsc):
+        """
+        保存资源到文件。
+        
+        如果资源没有关联文件名，则显示文件保存对话框。
+        
+        Args:
+            rsc: 要保存的资源对象。
+        """
         filename = rsc.get_prop(PROP_FILENAME)
         if filename is None:
             fn = os.path.join(os.getcwd(), "untitled.jhr")
@@ -344,22 +509,42 @@ class MainPageWidget(QtWidgets.QWidget):
         self._ui.label_state.clear()
 
     def _on_save(self):
+        """
+        处理保存按钮点击事件。
+        
+        保存当前资源到文件。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is None:
             return
         self._save(rsc)
 
     def _on_export(self):
+        """
+        处理导出按钮点击事件。
+        
+        显示导出对话框，将资源导出为其他格式。
+        """
         x = ExportDialog()
         x.exec_()
 
     def _on_save_and_exit(self):
+        """
+        处理保存并退出按钮点击事件。
+        
+        保存当前资源并发出关闭信号。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is not None:
             self._save(rsc)
         self.signal_close.emit()
 
     def _on_menu(self):
+        """
+        处理菜单按钮点击事件。
+        
+        根据点击的菜单按钮，切换显示相应的功能页面。
+        """
         rsc = ResourceMgr.get_instance().get_current()
         if rsc is None:
             return
@@ -373,7 +558,27 @@ class MainPageWidget(QtWidgets.QWidget):
 
 
 class MainWindow(QtWidgets.QWidget):
+    """
+    主窗口类(新版)。
+    
+    实现Jailhouse资源配置工具的无边框主窗口，提供资源创建、编辑和管理功能。
+    
+    Attributes:
+        _ui: 用户界面对象。
+        _home_page: 首页部件。
+        _main_page: 主页面部件。
+        _log_widget: 日志显示部件。
+        _tip_widget: 提示信息部件。
+        _check_widget: 检查信息部件。
+        _tools_spliter: 工具区域分割器。
+    """
     def __init__(self, parent=None) -> None:
+        """
+        初始化主窗口。
+        
+        Args:
+            parent: 父窗口部件，默认为None。
+        """
         super().__init__(parent)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint, True)
 
@@ -417,9 +622,23 @@ class MainWindow(QtWidgets.QWidget):
         self._on_status_btn()
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """
+        处理窗口显示事件。
+        
+        Args:
+            event: 显示事件对象。
+        """
         super().showEvent(event)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """
+        处理窗口关闭事件。
+        
+        在关闭窗口前检查是否有未保存的修改，提示用户保存。
+        
+        Args:
+            event: 关闭事件对象。
+        """
         rsc_mgr = ResourceMgr.get_instance()
         modified = list()
         for i in range(len(rsc_mgr)):
@@ -442,18 +661,38 @@ class MainWindow(QtWidgets.QWidget):
         return super().closeEvent(event)
 
     def _on_close(self):
+        """
+        处理关闭按钮点击事件。
+        
+        退出应用程序。
+        """
         QtWidgets.QApplication.instance().quit()
 
     def _on_minimize(self):
+        """
+        处理最小化按钮点击事件。
+        
+        最小化窗口。
+        """
         self.window().showMinimized()
 
     def _on_maximize(self):
+        """
+        处理最大化/还原按钮点击事件。
+        
+        在最大化和正常大小之间切换窗口状态。
+        """
         if self.window().isMaximized():
             self.window().showNormal()
         else:
             self.window().showMaximized()
 
     def _on_status_btn(self):
+        """
+        处理状态按钮点击事件。
+        
+        根据按钮状态，显示或隐藏相应的工具部件。
+        """
         show_log = self._ui.btn_log.isChecked()
         show_tip = self._ui.btn_tip.isChecked()
         show_check = self._ui.btn_check.isChecked()
@@ -467,17 +706,42 @@ class MainWindow(QtWidgets.QWidget):
             self._ui.frame_tools.hide()
 
     def _on_rsc_add(self, sender, **kwargs):
+        """
+        处理资源添加事件。
+        
+        当新资源被添加时，切换到主页面并显示该资源。
+        
+        Args:
+            sender: 信号发送者。
+            **kwargs: 关键字参数，包含添加的资源。
+        """
         if isinstance(sender, ResourceMgr):
             rsc = kwargs['rsc']
             self._ui.stacked_widget.setCurrentWidget(self._main_page)
             self._main_page.set_resource(rsc)
 
     def _on_main_page_close(self):
+        """
+        处理主页面关闭事件。
+        
+        切换回首页并清空资源显示。
+        """
         self._ui.stacked_widget.setCurrentWidget(self._home_page)
         self._main_page.set_resource(None)
 
 
 def load_stylesheet(name: str) -> Optional[str]:
+    """
+    加载样式表。
+    
+    从QSS文件或JSON配置文件加载样式表。
+    
+    Args:
+        name: 样式表文件名，可以是QSS文件或JSON配置文件。
+        
+    Returns:
+        加载的样式表文本，如果加载失败则返回None。
+    """
     qss_list = list()
     if name.endswith('.qss'):
         qss_list.append(name)
@@ -542,6 +806,16 @@ if __name__ == '__main__':
 
 
     def on_exception(etype, value, tb):
+        """
+        全局异常处理函数。
+        
+        捕获未处理的异常并显示异常对话框。
+        
+        Args:
+            etype: 异常类型。
+            value: 异常值。
+            tb: 异常追踪信息。
+        """
         s = io.StringIO()
         traceback.print_exception(etype, value, tb, file=s)
 
