@@ -10,35 +10,58 @@ from jh_resource import MemRegion, MemMap, MemRegionList
 from jh_resource import ResourceMgr
 from jh_resource import CommonOSRunInfo, LinuxRunInfo, ACoreRunInfo
 
+# 内存对齐检查工具
 # TODO
 # ERROR 仅仅一个device table
 # WARN  设备表不超过1MB
 
 
 def align_4k(value) -> bool:
+    """检查值是否按4K对齐"""
     if value & (4096-1):
         return False
     return True
 
 
 class CheckResult():
+    """
+    检查结果容器
+    
+    存储单项检查的状态和相关消息，支持成功/失败状态及警告信息
+    
+    Attributes:
+        name: 检查项名称
+        state: 检查状态（True=成功，False=失败）
+        failed_messages: 失败消息列表
+        warning_messages: 警告消息列表
+    """
     def __init__(self, name) -> None:
+        """
+        初始化检查结果
+        
+        Args:
+            name: 检查项名称
+        """
         self.name = name
         self.state = True
         self.failed_messages = list()
         self.warning_messages = list()
 
     def failed(self, msg):
+        """标记检查失败并添加失败消息"""
         self.state = False
         self.failed_messages.append(msg)
 
     def warning(self, msg):
+        """添加警告消息（不影响检查状态）"""
         self.warning_messages.append(msg)
 
     def __bool__(self):
+        """支持布尔判断检查结果"""
         return self.state
 
     def __str__(self) -> str:
+        """返回格式化的检查结果字符串"""
         value = list()
         if self.state:
             value.append(f'{self.name} : 成功')
@@ -51,17 +74,32 @@ class CheckResult():
         return '\n'.join(value)
 
 class Checklist(object):
+    """
+    配置检查工具类
+    
+    提供对Jailhouse配置资源的全面检查功能，包括平台、根单元、客户单元和资源冲突检查
+    """
 
     def __init__(self) -> None:
         super().__init__()
 
     @classmethod
     def check(cls, rsc: Resource) -> List[CheckResult]:
+        """
+        执行完整配置检查
+        
+        Args:
+            rsc: 待检查的资源对象
+            
+        Returns:
+            检查结果列表
+        """
         results = list()
         rootcell = rsc.jailhouse().rootcell()
         guestcells = rsc.jailhouse().guestcells()
         board = rsc.platform().board()
 
+        # 执行各部分检查
         results.extend(cls.platform_check(rsc.platform()))
         results.extend(cls.rootcell_check(rsc.jailhouse().rootcell()))
 
@@ -73,12 +111,22 @@ class Checklist(object):
         for guestcell in guestcells:
             results.extend(cls.run_check(guestcell))
 
+        # 资源冲突检查
         results.extend(cls.conflict_check(rsc))
 
         return results
 
     @classmethod
     def platform_check(cls, platform: ResourcePlatform) -> List[CheckResult]:
+        """
+        检查平台配置
+        
+        Args:
+            platform: 平台资源对象
+            
+        Returns:
+            平台检查结果列表
+        """
         results = list()
         # 检查CPU的region地址空间
         # 1. 重叠区域
@@ -98,10 +146,20 @@ class Checklist(object):
 
     @classmethod
     def rootcell_check(cls, rootcell: ResourceRootCell) -> List[CheckResult]:
+        """
+        检查根单元配置
+        
+        Args:
+            rootcell: 根单元资源对象
+            
+        Returns:
+            根单元检查结果列表
+        """
         results = list()
         name = rootcell.name()
         board: ResourceBoard = rootcell.find(ResourceBoard)
 
+        # 检查根单元名称合法性
         item = CheckResult("检查rootcell名称")
         if not ResourceRootCell.check_name(name):
             item.failed("名称 {name} 非法")
@@ -138,6 +196,12 @@ class Checklist(object):
     def conflict_check(cls, rsc: Resource) -> List[CheckResult]:
         """
         资源冲突检查
+
+        Args:
+            rsc: 资源对象
+            
+        Returns:
+            冲突检查结果列表
         """
         rootcell = rsc.jailhouse().rootcell()
         guestcells = rsc.jailhouse().guestcells()
@@ -195,6 +259,15 @@ class Checklist(object):
 
     @classmethod
     def guestcell_check(cls, cell: ResourceGuestCell) -> List[CheckResult]:
+        """
+        检查客户单元配置
+        
+        Args:
+            cell: 客户单元资源对象
+            
+        Returns:
+            客户单元检查结果列表
+        """
         cellname = cell.name()
         results = list()
 
@@ -259,6 +332,12 @@ class Checklist(object):
     def run_check(cls, guestcell: ResourceGuestCell) -> List[CheckResult]:
         """
         检查guestcell运行配置
+
+        Args:
+            guestcell: 客户单元资源对象
+            
+        Returns:
+            运行配置检查结果列表
         """
         rsc: Resource = guestcell.find(Resource)
         cellname = guestcell.name()
@@ -364,6 +443,15 @@ class Checklist(object):
 @click.command()
 @click.argument('jhr')
 def check_cli(jhr):
+    """
+    命令行配置检查工具
+    
+    Args:
+        jhr: 配置文件路径
+        
+    Returns:
+        检查成功返回True，失败返回False
+    """
     rsc = ResourceMgr.get_instance().open(jhr)
     if rsc is None:
         print("open failed.")
