@@ -1,3 +1,25 @@
+"""
+工具函数与配置管理模块。
+
+本模块提供了系统工具集成与配置管理功能，包括：
+- 数值与人类可读格式的转换（地址、大小）
+- Cpio文件操作工具
+- 模板文件路径解析
+- 跨平台工具路径获取
+- 配置文件（.resource_tool）的加载与管理
+
+主要函数:
+- to_human_addr: 将数值转换为十六进制地址字符串
+- to_human_size: 将字节数转换为带单位的可读字符串
+- from_human_num: 将带单位的字符串转换为数值
+- get_template_path: 获取模板文件路径（支持打包环境）
+- get_cpio: 获取Cpio工具路径（区分Windows/Linux）
+
+主要类:
+- CpioUtil: Cpio文件操作工具类
+- Profile: 配置文件管理类
+"""
+
 import os
 import sys
 from typing import Optional, Any, List
@@ -13,10 +35,26 @@ _GB = 1024*1024*1024
 
 
 def to_human_addr(value: int) -> str:
+    """
+    将数值转换为十六进制地址字符串。
+    
+    Args:
+        value: 数值地址
+    Returns:
+        十六进制字符串（如"0x1234"）
+    """
     return hex(value)
 
 
 def to_human_size(value: int) -> str:
+    """
+    将字节数转换为带单位的可读字符串（GB/MB/KB）。
+    
+    Args:
+        value: 字节数
+    Returns:
+        带单位的字符串（如"10*MB"）
+    """
     if value == 0:
         return "0"
     if value%_GB == 0:
@@ -29,6 +67,14 @@ def to_human_size(value: int) -> str:
 
 
 def from_human_num(s) -> Optional[int]:
+    """
+    将带单位的字符串转换为数值（支持KB/MB/GB）。
+    
+    Args:
+        s: 带单位的字符串（如"10*MB"）
+    Returns:
+        转换后的整数，失败返回None
+    """
     _globals = {
         '__builtins__':None,
         'KB': 1024,
@@ -43,12 +89,26 @@ def from_human_num(s) -> Optional[int]:
 
 
 def get_template_path(name: str) -> str:
+    """
+    获取模板文件路径（支持PyInstaller打包环境）。
+    
+    Args:
+        name: 模板文件名
+    Returns:
+        模板文件的绝对路径
+    """
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         meipass = getattr(sys, '_MEIPASS')
         return os.path.join(meipass, "template", name)
     return os.path.join("assets", "template", name)
 
 def get_cpio() -> str:
+    """
+    获取Cpio工具路径（Windows系统使用内置版本，Linux使用系统命令）。
+    
+    Returns:
+        Cpio工具的绝对路径或命令名
+    """
     if platform.system() == "Windows":
         if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
             meipass = getattr(sys, '_MEIPASS')
@@ -60,16 +120,43 @@ def get_cpio() -> str:
 
 
 class CpioUtil():
+    """
+    Cpio文件操作工具类。
+    
+    提供Cpio文件的追加内容、读取字节数据及另存为功能，
+    自动管理临时目录用于文件操作。
+    
+    属性:
+        _filename: 目标Cpio文件名
+        _temp_dir: 临时工作目录
+        _temp_cpio: 临时Cpio文件路径
+    """
     def __init__(self, filename) -> None:
+        """
+        初始化Cpio工具类。
+        
+        Args:
+            filename: 目标Cpio文件名
+        """
         self._filename = filename
         self._temp_dir = tempfile.mkdtemp(prefix='jh_')
         self._temp_cpio = None
 
     def __del__(self):
+        """析构函数，清理临时目录"""
         shutil.rmtree(self._temp_dir)
         self._temp_dir = None
 
     def append(self, name: str, data: bytes) -> bool:
+        """
+        向Cpio文件追加内容。
+        
+        Args:
+            name: 追加的文件名
+            data: 文件内容字节数据
+        Returns:
+            操作成功与否
+        """
         if self._temp_cpio is None:
             temp = os.path.join(self._temp_dir, "temp.cpio")
             try:
@@ -102,6 +189,12 @@ class CpioUtil():
         return True
 
     def get_bytes(self) -> Optional[bytes]:
+        """
+        获取Cpio文件的字节数据（包含临时修改）。
+        
+        Returns:
+            文件字节数据，失败返回None
+        """
         fn = self._filename
         if self._temp_cpio:
             fn = self._temp_cpio
@@ -115,6 +208,14 @@ class CpioUtil():
         return None
 
     def save_as(self, dst: str) -> bool:
+        """
+        将修改后的Cpio文件另存为新文件。
+        
+        Args:
+            dst: 目标文件路径
+        Returns:
+            操作成功与否
+        """
         fn = self._filename
         if self._temp_cpio:
             fn = self._temp_cpio
@@ -127,6 +228,12 @@ class CpioUtil():
 
 
 def profile_load() -> dict:
+    """
+    加载配置文件（~/.resource_tool）。
+    
+    Returns:
+        配置字典，加载失败返回空字典
+    """
     fn = os.path.join(pathlib.Path.home(), ".resource_tool")
     try:
         with open(fn, 'rt', encoding='utf8') as f:
@@ -139,11 +246,29 @@ def profile_load() -> dict:
 
 
 class Profile(object):
+    """
+    配置文件管理类。
+    
+    提供配置项的读取、保存功能，配置存储于~/.resource_tool文件，
+    支持类型校验和持久化存储。
+    
+    属性:
+        profile: 全局配置字典
+    """
 
     profile = profile_load()
 
     @classmethod
     def profile_get(cls, name, def_value) -> Any:
+        """
+        获取配置项值（带类型校验）。
+        
+        Args:
+            name: 配置项名称
+            def_value: 默认值（决定返回类型）
+        Returns:
+            配置项值，类型匹配失败返回默认值
+        """
         value = cls.profile.get(name)
         if isinstance(value, type(def_value)):
             return value
@@ -151,6 +276,13 @@ class Profile(object):
 
     @classmethod
     def profile_set(cls, name: str, value: Any):
+        """
+        设置配置项值并保存到文件。
+        
+        Args:
+            name: 配置项名称
+            value: 配置项值
+        """
         cls.profile[name] = value
         fn = os.path.join(pathlib.Path.home(), ".resource_tool")
         try:
@@ -161,14 +293,37 @@ class Profile(object):
             pass
 
     class Item(object):
+        """
+        配置项封装类。
+        
+        用于将配置项绑定为对象属性，支持类型安全的读写操作。
+        
+        属性:
+            _name: 配置项名称
+            _value: 配置项值
+        """
         def __init__(self, name, def_value) -> None:
+            """
+            初始化配置项。
+            
+            Args:
+                name: 配置项名称
+                def_value: 默认值（决定类型）
+            """
             self._name = name
             self._value = Profile.profile_get(name, def_value)
 
         def get(self):
+            """获取配置项值"""
             return self._value
 
         def set(self, value):
+            """
+            设置配置项值（带类型校验）。
+            
+            Args:
+                value: 要设置的值
+            """
             if not isinstance(value, type(self._value)):
                 return
             self._value = value
