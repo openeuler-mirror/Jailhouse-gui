@@ -198,10 +198,28 @@
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_3">
                    <item>
-                    <widget class="QLabel" name="label_gic_title">
-                     <property name="text">
-                      <string>GIC</string>
+                    <widget class="QFrame" name="frame_sysinfo_title_2">
+                     <property name="styleSheet">
+                      <string notr="true"/>
                      </property>
+                     <property name="frameShape">
+                      <enum>QFrame::Panel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_8">
+                      <item>
+                       <widget class="QLabel" name="label_sysinfo_4">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="text">
+                         <string>GIC</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
                    </item>
                    <item>
@@ -386,25 +404,55 @@
                       <property name="text">
                        <string>名称</string>
                       </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
                      </column>
                      <column>
                       <property name="text">
                        <string>属性</string>
+                      </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
                       </property>
                      </column>
                      <column>
                       <property name="text">
                        <string>类型</string>
                       </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
                      </column>
                      <column>
                       <property name="text">
                        <string>地址</string>
                       </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
+                      </property>
                      </column>
                      <column>
                       <property name="text">
                        <string>大小</string>
+                      </property>
+                      <property name="font">
+                       <font>
+                        <weight>75</weight>
+                        <bold>true</bold>
+                       </font>
                       </property>
                      </column>
                     </widget>
