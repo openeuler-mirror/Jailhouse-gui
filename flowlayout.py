@@ -49,9 +49,15 @@ from PySide2.QtWidgets import (QApplication, QLayout, QPushButton,
 
 
 class Window(QWidget):
+    """流布局演示窗口
+    
+    创建一个包含FlowLayout的窗口，添加多个按钮用于展示流布局效果
+    """
     def __init__(self):
+        """初始化流布局演示窗口"""
         super(Window, self).__init__()
 
+        # 创建流布局并添加多个按钮进行演示
         flowLayout = FlowLayout(self)
         flowLayout.addWidget(QPushButton("Short"))
         flowLayout.addWidget(QPushButton("Longer"))
@@ -63,55 +69,76 @@ class Window(QWidget):
 
 
 class FlowLayout(QLayout):
+    """流布局实现
+    
+    类似网页中的浮动布局效果，当水平空间不足时自动换行排列子控件
+    """
     def __init__(self, parent=None):
+        """初始化流布局
+        
+        Args:
+            parent: 父窗口部件，默认为None
+        """
         super(FlowLayout, self).__init__(parent)
 
+         # 设置内容边距
         if parent is not None:
             self.setContentsMargins(QMargins(0, 0, 0, 0))
 
         self._item_list = []
 
     def __del__(self):
+        """析构函数：清理所有布局项"""
         item = self.takeAt(0)
         while item:
             item = self.takeAt(0)
 
     def addItem(self, item):
+        """添加布局项到列表"""
         self._item_list.append(item)
 
     def count(self):
+        """返回布局项数量"""
         return len(self._item_list)
 
     def itemAt(self, index):
+        """获取指定索引的布局项"""
         if index >= 0 and index < len(self._item_list):
             return self._item_list[index]
 
         return None
 
     def takeAt(self, index):
+         """移除并返回指定索引的布局项"""
         if index >= 0 and index < len(self._item_list):
             return self._item_list.pop(index)
 
         return None
 
     def expandingDirections(self):
+        """返回布局的扩展方向（水平和垂直均不扩展）"""
         return Qt.Orientations(Qt.Orientation(0))
 
     def hasHeightForWidth(self):
+        """指示布局的高度依赖于宽度（流布局的特性）"""
         return True
 
     def heightForWidth(self, width):
+        """计算给定宽度下所需的高度"""
         height = self._do_layout(QRect(0, 0, width, 0), True)
         return height
 
     def setGeometry(self, rect):
+        """设置布局的几何区域并执行布局操作"""
         super(FlowLayout, self).setGeometry(rect)
         self._do_layout(rect, False)
 
     def sizeHint(self):
+        """返回布局的建议大小（等于最小大小）"""
         return self.minimumSize()
 
     def minimumSize(self):
+        """计算布局的最小尺寸"""
         size = QSize()
 
         for item in self._item_list:
@@ -122,12 +149,22 @@ class FlowLayout(QLayout):
         return size
 
     def _do_layout(self, rect, test_only):
+        """执行布局计算
+        
+        Args:
+            rect: 布局区域
+            test_only: 是否仅进行测试计算（不实际设置几何位置）
+            
+        Returns:
+            布局所需的总高度
+        """
         x = rect.x()
         y = rect.y()
         line_height = 0
-        spacing = self.spacing()
+        spacing = self.spacing()    # 获取布局项之间的间距
 
         for item in self._item_list:
+            # 获取样式表中的间距信息
             style = item.widget().style()
             layout_spacing_x = style.layoutSpacing(QSizePolicy.PushButton,
                                                    QSizePolicy.PushButton,
@@ -135,22 +172,26 @@ class FlowLayout(QLayout):
             layout_spacing_y = style.layoutSpacing(QSizePolicy.PushButton,
                                                    QSizePolicy.PushButton,
                                                    Qt.Vertical)
-            space_x = spacing + layout_spacing_x
-            space_y = spacing + layout_spacing_y
+            space_x = spacing + layout_spacing_x    # 水平间距
+            space_y = spacing + layout_spacing_y    # 垂直间距
+
+            # 计算下一个控件的x坐标
             next_x = x + item.sizeHint().width() + space_x
+            # 如果超出当前行宽度，则换行
             if next_x - space_x > rect.right() and line_height > 0:
                 x = rect.x()
                 y = y + line_height + space_y
                 next_x = x + item.sizeHint().width() + space_x
                 line_height = 0
 
+            # 如果不是测试模式，则实际设置控件位置
             if not test_only:
                 item.setGeometry(QRect(QPoint(x, y), item.sizeHint()))
 
             x = next_x
             line_height = max(line_height, item.sizeHint().height())
 
-        return y + line_height - rect.y()
+        return y + line_height - rect.y()   # 返回总高度
 
 
 if __name__ == '__main__':
