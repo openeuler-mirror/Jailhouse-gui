@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Build outputs (build.py / pyinstaller)
+build/
+dist/
+
+# Generated from Qt .ui / .qrc
+forms/ui_*.py
+assets/qr_*.py
