@@ -1,3 +1,24 @@
+"""
+PCI 设备解析与表示模块。
+
+本模块提供从 sysfs（/sys/bus/pci/devices）读取并解析 PCI 设备配置和资源的工具，
+包括解析配置空间的能力列表（capabilities）、扩展能力（extended caps）、
+BAR（Base Address Registers）以及将设备信息序列化为字典用于上层显示或 RPC。
+
+主要类:
+- `PCICapFlag`, `PCICapID`, `PCIExtCapID`: 枚举，描述能力标识与属性。
+- `PCICap`: 表示单个能力（capability），包含解析与序列化方法。
+- `PCIBar`: 表示 BAR（资源）并支持从 resource 文件解析多个 BAR。
+- `PCIDevice`: 表示完整的 PCI 设备，支持从 sysfs 加载 (`from_sysfs`) 及批量读取。
+
+使用摘要:
+- 调用 `PCIDevice.from_sysfs(path)` 从指定 sysfs 设备目录解析设备信息。
+- 使用 `PCIDevice.all_from_sysfs()` 枚举并读取系统中所有 PCI 设备。
+
+注意：本模块假定在 Linux 环境下运行，并通过读取 `/sys/bus/pci/devices/*` 中的
+`config` 与 `resource` 文件来获取设备信息。
+"""
+
 import os
 import struct
 import enum
@@ -8,6 +29,10 @@ from collections import OrderedDict
 
 
 class PCICapFlag(enum.Enum):
+    """能力访问/权限标志枚举。
+
+    描述对能力寄存器访问的预期权限或行为，例如只读/可读写等。
+    """
     NONE = ''
     RW = 'rw'
     RD = 'r'
@@ -36,6 +61,8 @@ class PCICapID(enum.Enum):
     AdvancedFeatures        = 0x13
     EnhancedAllocation      = 0x14
     FlatPortalBridge        = 0x15
+
+    """标准 PCI 能力 ID 枚举及其描述映射。"""
 
     _describes = {
         0x00: "Null Capability",
@@ -69,6 +96,7 @@ class PCICapID(enum.Enum):
                 return e
 
     def descript(self) -> str:
+        """返回该能力 ID 对应的人类可读描述（若可用）。"""
         describs = self._describes.value
         if self.value in describs:
             return describs[self.value]
@@ -123,6 +151,8 @@ class PCIExtCapID(enum.Enum):
     SFI                    = 0x002C
     ShadowFunctions        = 0x002D
     DataObjectExchange     = 0x002E
+
+    """PCI 扩展能力 ID 枚举及其描述映射（用于 PCIe 扩展能力）。"""
 
     _describes = {
         0x0000: "Null Capability",
@@ -181,6 +211,7 @@ class PCIExtCapID(enum.Enum):
                 return e
 
     def descript(self) -> str:
+        """返回该扩展能力 ID 对应的人类可读描述（若可用）。"""
         describs = self._describes.value
         if self.value in describs:
             return describs[self.value]
@@ -188,6 +219,12 @@ class PCIExtCapID(enum.Enum):
 
 
 class PCICap(object):
+    """表示单个 PCI 能力（Capability）。
+
+    包含能力的类型、在配置空间中的偏移、长度、访问标志、是否为扩展能力等信息，
+    并提供将能力序列化为 dict 的方法。
+    """
+
     def __init__(self, cap: PCICapID, start) -> None:
         super().__init__()
         self.cap = cap
@@ -200,6 +237,7 @@ class PCICap(object):
         self.msix_addr = 0
 
     def to_dict(self):
+        """将能力信息转换为有序字典，便于 JSON/显示层使用。"""
         values = OrderedDict()
         values['cap'] = self.cap.value
         values['name'] = self.cap.name
@@ -212,6 +250,15 @@ class PCICap(object):
 
     @classmethod
     def parse(cls, config: BytesIO) -> list:
+        """
+        从给定的配置空间（二进制流）解析标准能力与扩展能力列表。
+
+        Args:
+            config (BytesIO): 包含设备 4096 字节配置空间的二进制流。
+
+        Returns:
+            list: 解析得到的 PCICap 列表。
+        """
         caps = list()
         has_extended_caps = False
 
@@ -341,6 +388,7 @@ class PCIBar:
         NONE  = 'none'
 
     def __init__(self, start, size, mask, _type):
+        """表示一个 BAR（Base Address Register）及其类型与大小信息。"""
         self.start = start
         self.size = size
         self.mask = mask
@@ -359,6 +407,11 @@ class PCIBar:
         IORESOURCE_IO = 0x00000100
         IORESOURCE_MEM = 0x00000200
         IORESOURCE_MEM_64 = 0x00100000
+
+        """
+        从设备的 `resource` 文件文本中解析最多 6 个 BAR 的起始/结束和标志，
+        并返回相应的 `PCIBar` 列表。
+        """
 
         bars = list()
 
@@ -403,6 +456,7 @@ class PCIDevice():
         BRIDGE = 'bridge'
 
     def __init__(self) -> None:
+        """表示一个完整的 PCI 设备并保存解析得到的配置与资源信息。"""
         self.path = ''
         self.type = self.Type.DEVICE
         self.caps: List[PCICap] = list()
@@ -422,6 +476,7 @@ class PCIDevice():
         self.msix_address = 0
 
     def dump(self):
+        """打印设备的 capability 与 BAR 信息（用于调试/开发）。"""
         print("Capability:")
         for cap in self.caps:
             print(f'  {cap.to_dict()}')
@@ -431,6 +486,7 @@ class PCIDevice():
             print(f'  {bar.to_dict()}')
 
     def to_dict(self):
+        """将设备信息序列化为有序字典，方便 JSON 或 RPC 返回使用。"""
         values = OrderedDict()
         values['path'] = self.path
         values['type'] = self.type.value
@@ -451,6 +507,15 @@ class PCIDevice():
 
     @classmethod
     def from_sysfs(cls, path: str):
+        """
+        从 sysfs 指定的设备路径解析 PCI 设备信息。
+
+        Args:
+            path (str): /sys/bus/pci/devices 下的设备路径，例如 '0000:09:00.0' 的完整路径。
+
+        Returns:
+            PCIDevice | None: 解析成功返回 `PCIDevice` 实例，失败返回 `None`。
+        """
         try:
             with open(os.path.join(path, 'config'), "rb") as f:
                 config_data = f.read()
@@ -524,6 +589,12 @@ class PCIDevice():
 
     @classmethod
     def all_from_sysfs(cls):
+        """
+        枚举系统中所有 PCI 设备并解析为 `PCIDevice` 列表。
+
+        Returns:
+            list: 已解析的 `PCIDevice` 实例列表。
+        """
         devices = []
         pci_list = sorted(glob.glob('/sys/bus/pci/devices/*'))
 
