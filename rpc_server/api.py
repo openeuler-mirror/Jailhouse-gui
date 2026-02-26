@@ -92,7 +92,7 @@ class RPCApi(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def destroy_cell(self, name: str) -> dict:
-        """ 创建cell
+        """ 销毁cell
         """
         return None
 
