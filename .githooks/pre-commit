@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+die() {
+  echo "pre-commit: $*" >&2
+  exit 1
+}
+
+if ! command -v git >/dev/null 2>&1; then
+  die "git not found in PATH"
+fi
+
+# 1) Block whitespace errors (trailing whitespace, space-before-tab, etc.)
+#    Policy: keep this gate focused on Python only; other files are lenient.
+ws="$(git diff --cached --check --no-color -- '*.py' || true)"
+if [[ -n "${ws}" ]]; then
+  echo "${ws}" >&2
+  die "whitespace errors found in staged diff (run git diff --check)."
+fi
+
+staged_files="$(git diff --cached --name-only --diff-filter=ACMR)"
+if [[ -z "${staged_files}" ]]; then
+  exit 0
+fi
+
+# Prefer ripgrep when available, otherwise fall back to grep.
+if command -v rg >/dev/null 2>&1; then
+  has_conflict_markers() { rg -n "^(<<<<<<<|=======|>>>>>>>)( |$)" >/dev/null 2>&1; }
+else
+  has_conflict_markers() { grep -nE "^(<<<<<<<|=======|>>>>>>>)( |$)" >/dev/null 2>&1; }
+fi
+
+# 2) Block common unresolved merge conflict markers in staged Python content.
+python_files="$(printf '%s\n' "${staged_files}" | grep -E "\.py$" || true)"
+if [[ -n "${python_files}" ]]; then
+  while IFS= read -r f; do
+    [[ -z "${f}" ]] && continue
+    if git show ":${f}" 2>/dev/null | has_conflict_markers; then
+      die "merge conflict markers found in staged file: ${f}"
+    fi
+  done <<< "${python_files}"
+fi
+
+# 3) Basic Python syntax gate for staged *.py.
+if [[ -n "${python_files}" ]]; then
+  if ! command -v python >/dev/null 2>&1; then
+    die "python not found in PATH (needed for syntax check)."
+  fi
+  while IFS= read -r f; do
+    [[ -z "${f}" ]] && continue
+    python -m py_compile "${f}" || die "python syntax error: ${f}"
+  done <<< "${python_files}"
+fi
+
+# 4) Prevent accidentally committing huge blobs (tweak threshold if needed).
+max_bytes=$((10 * 1024 * 1024)) # 10 MiB
+added_files="$(git diff --cached --name-only --diff-filter=A)"
+if [[ -n "${added_files}" ]]; then
+  while IFS= read -r f; do
+    [[ -z "${f}" ]] && continue
+    # Use the index object size, not working tree size.
+    size="$(git cat-file -s ":${f}" 2>/dev/null || echo 0)"
+    if [[ "${size}" -gt "${max_bytes}" ]]; then
+      die "added file too large (${size} bytes > ${max_bytes}): ${f}"
+    fi
+  done <<< "${added_files}"
+fi
+
+exit 0

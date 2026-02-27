@@ -196,11 +196,10 @@ bash scripts/install-git-hooks-conventional.sh
 3）提交消息写法（示例）
 
 ```text
-feat(gui): add resource tree search
+feat: Add resource tree search
 
 Add a filter box to locate nodes in large JHR files.
 
-Tags: gui, ux
 Signed-off-by: Your Name <you@example.com>
 ```
 

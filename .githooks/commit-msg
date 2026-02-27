@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Wrapper hook: keep entrypoint stable while splitting rules into separate files.
+
+msg_file="${1:-}"
+hook_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+if ! command -v git >/dev/null 2>&1; then
+  echo "commit-msg: git not found in PATH" >&2
+  exit 1
+fi
+
+# Allow enabling gate / conventional checks independently via git config.
+# Defaults are "true" to keep behavior strict unless explicitly opted out.
+enabled_gate="$(git config --bool --get jh.hooks.commitmsg.gate || echo true)"
+enabled_conv="$(git config --bool --get jh.hooks.commitmsg.conventional || echo true)"
+
+if [[ "${enabled_gate}" == "true" ]]; then
+  bash "${hook_dir}/commit-msg.gate" "${msg_file}"
+fi
+
+if [[ "${enabled_conv}" == "true" ]]; then
+  bash "${hook_dir}/commit-msg.conventional" "${msg_file}"
+fi
+
+exit 0
