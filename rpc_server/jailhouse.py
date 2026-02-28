@@ -65,7 +65,7 @@ class Jailhouse(object):
     jh_dev = '/dev/jailhouse'
     linux_loader = os.path.join(jailhouse_bin, "linux-loader.bin")
 
-    tmep_files = list()
+
 
     def __init__(self) -> None:
         pass
