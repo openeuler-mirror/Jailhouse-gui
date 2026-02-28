@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+msg_file="${1:-}"
+if [[ -z "${msg_file}" || ! -f "${msg_file}" ]]; then
+  echo "commit-msg: missing commit message file" >&2
+  exit 1
+fi
+
+die() {
+  echo "commit-msg: $*" >&2
+  exit 1
+}
+
+# Read commit message, stripping CRLF and comment lines.
+mapfile -t _lines < <(tr -d '\r' < "${msg_file}" | grep -vE '^[[:space:]]*#' || true)
+
+# Trim trailing empty lines.
+while ((${#_lines[@]} > 0)) && [[ -z "${_lines[-1]}" ]]; do
+  unset '_lines[-1]'
+done
+
+subject="${_lines[0]:-}"
+
+# Allow merge commits (often auto-generated).
+if [[ "${subject}" =~ ^Merge[[:space:]] ]]; then
+  exit 0
+fi
+
+if [[ -z "${subject}" ]]; then
+  die "empty commit subject"
+fi
+
+# Allow autosquash helpers: they are meant to be temporary and often don't carry trailers.
+if [[ "${subject}" =~ ^(fixup!\ |squash!\ ) ]]; then
+  exit 0
+fi
+
+# No trailing whitespace on any meaningful line.
+for i in "${!_lines[@]}"; do
+  if [[ "${_lines[$i]}" =~ [[:space:]]$ ]]; then
+    die "line $((i+1)) has trailing whitespace"
+  fi
+done
+
+max_subject_len=72
+if (( ${#subject} > max_subject_len )); then
+  die "commit subject too long (${#subject} > ${max_subject_len})"
+fi
+
+if [[ "${subject}" =~ ^[Ww][Ii][Pp] ]]; then
+  die "WIP commits are blocked; please use a meaningful subject"
+fi
+
+# Require a footer(trailer) block at the end and enforce local policy footers:
+# - Signed-off-by: Name <email>
+# - Tags: tag1, tag2  (or Tag: tag)
+trailer_re='^[A-Za-z][A-Za-z0-9-]*:[[:space:]]+.+$'
+trailer_start="${#_lines[@]}"
+for ((idx=${#_lines[@]}-1; idx>=0; idx--)); do
+  line="${_lines[$idx]}"
+  if [[ "${line}" =~ ${trailer_re} ]]; then
+    trailer_start="${idx}"
+    continue
+  fi
+  break
+done
+
+if (( trailer_start >= ${#_lines[@]} )); then
+  die "missing trailers block at end (need at least Tags/Tag and Signed-off-by)"
+fi
+
+# Enforce an empty line before trailers.
+if (( trailer_start == 0 )) || [[ -n "${_lines[$((trailer_start-1))]}" ]]; then
+  die "missing blank line before trailers block"
+fi
+
+trailers="$(printf '%s\n' "${_lines[@]:trailer_start}")"
+
+signed_off="$(printf '%s\n' "${trailers}" | grep -E '^Signed-off-by: .+ <[^>]+>$' || true)"
+if [[ -z "${signed_off}" ]]; then
+  die "missing trailer: Signed-off-by: Name <email> (tip: use git commit -s)"
+fi
+
+# Optionally require the sign-off matches local git identity (can be relaxed via env).
+if [[ "${JH_HOOKS_ALLOW_MISMATCH_SIGNOFF:-0}" != "1" ]]; then
+  cfg_name="$(git config user.name || true)"
+  cfg_email="$(git config user.email || true)"
+  if [[ -n "${cfg_name}" && -n "${cfg_email}" ]]; then
+    expected="Signed-off-by: ${cfg_name} <${cfg_email}>"
+    if ! printf '%s\n' "${trailers}" | grep -Fqx "${expected}"; then
+      die "Signed-off-by must match git user.name/user.email (set JH_HOOKS_ALLOW_MISMATCH_SIGNOFF=1 to relax)"
+    fi
+  fi
+fi
+
+tags_line="$(printf '%s\n' "${trailers}" | grep -E '^(Tags|Tag):[[:space:]]+' | tail -n 1 || true)"
+if [[ -z "${tags_line}" ]]; then
+  die "missing trailer: Tags: tag1, tag2 (or Tag: tag)"
+fi
+
+tags_value="${tags_line#*:}"
+tags_value="$(echo "${tags_value}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+if [[ -z "${tags_value}" ]]; then
+  die "Tags/Tag trailer value is empty"
+fi
+
+IFS=',' read -r -a tags <<< "${tags_value}"
+for t in "${tags[@]}"; do
+  t="$(echo "${t}" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+  if [[ -z "${t}" ]]; then
+    die "Tags contains empty item (check commas)"
+  fi
+  if ! [[ "${t}" =~ ^[a-z0-9][a-z0-9_-]*$ ]]; then
+    die "invalid tag '${t}' (allowed: [a-z0-9][a-z0-9_-]*)"
+  fi
+done
+
+exit 0

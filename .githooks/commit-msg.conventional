@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+msg_file="${1:-}"
+if [[ -z "${msg_file}" || ! -f "${msg_file}" ]]; then
+  echo "commit-msg: missing commit message file" >&2
+  exit 1
+fi
+
+die() {
+  echo "commit-msg: $*" >&2
+  exit 1
+}
+
+# Read commit message, stripping CRLF and comment lines.
+mapfile -t _lines < <(tr -d '\r' < "${msg_file}" | grep -vE '^[[:space:]]*#' || true)
+
+# Trim trailing empty lines.
+while ((${#_lines[@]} > 0)) && [[ -z "${_lines[-1]}" ]]; do
+  unset '_lines[-1]'
+done
+
+subject="${_lines[0]:-}"
+
+# Allow merge commits and autosquash helpers.
+if [[ "${subject}" =~ ^Merge[[:space:]] ]]; then
+  exit 0
+fi
+if [[ "${subject}" =~ ^(fixup!\ |squash!\ ) ]]; then
+  exit 0
+fi
+
+# Custom commit message style:
+#   <Type>[optional scope][optional !]: <Description>
+#
+# - Type must start with an uppercase letter (e.g. Chore, Fix, Docs)
+# - scope is optional, in parentheses
+# - ! is optional and indicates breaking change
+# - Subject must start at column 1 (no leading spaces)
+# - Use ASCII ":" and exactly one space after it
+# - Description must start with an uppercase letter
+re='^([A-Z][A-Za-z0-9-]*)(\([A-Za-z0-9][A-Za-z0-9._/-]*\))?(!)?: ([A-Z].*)$'
+if ! [[ "${subject}" =~ ${re} ]]; then
+  cat >&2 <<'EOF'
+commit-msg: invalid subject format
+
+Expected:
+  <Type>: <Description>
+  <Type>(<scope>): <Description>
+  <Type>!: <Description>              # breaking change
+  <Type>(<scope>)!: <Description>     # breaking change
+
+Examples:
+  Feat: Add mem-map viewer
+  Fix(rpc): Handle reconnect timeout
+  Docs(readme): Update build steps
+EOF
+  exit 1
+fi
+
+# Enforce an allowlist of types.
+# Override via env if needed:
+#   JH_HOOKS_TYPES="Feat Fix Docs Style Refactor Perf Test Build Ci Chore Revert"
+types_default="Feat Fix Docs Style Refactor Perf Test Build Ci Chore Revert"
+types_allowed="${JH_HOOKS_TYPES:-$types_default}"
+type_raw="${BASH_REMATCH[1]}"
+if ! echo " ${types_allowed} " | grep -Fq " ${type_raw} "; then
+  die "invalid type '${type_raw}'. Allowed types: ${types_allowed}"
+fi
+
+# If there's a body/footer(s), enforce a blank line after the subject (per spec examples).
+if ((${#_lines[@]} > 1)) && [[ -n "${_lines[1]}" ]]; then
+  die "line 2 must be blank (separate subject and body/footer(s) with an empty line)"
+fi
+
+# (Optional) If the message ends with a footer block, enforce footer syntax.
+# We only validate the "header" line forms:
+#   Token: value
+#   Token #value
+#   BREAKING CHANGE: value
+#   BREAKING-CHANGE: value
+footer_re='^([A-Za-z][A-Za-z0-9-]*)(: | #).+$'
+breaking_re='^(BREAKING CHANGE|BREAKING-CHANGE):[[:space:]]+.+$'
+footer_start="${#_lines[@]}"
+for ((idx=${#_lines[@]}-1; idx>=0; idx--)); do
+  line="${_lines[$idx]}"
+  if [[ "${line}" =~ ${footer_re} ]] || [[ "${line}" =~ ${breaking_re} ]]; then
+    footer_start="${idx}"
+    continue
+  fi
+  break
+done
+
+if (( footer_start < ${#_lines[@]} )); then
+  # Require a blank line before footers, consistent with spec examples.
+  if (( footer_start == 0 )) || [[ -n "${_lines[$((footer_start-1))]}" ]]; then
+    die "missing blank line before footer block"
+  fi
+fi
+
+exit 0

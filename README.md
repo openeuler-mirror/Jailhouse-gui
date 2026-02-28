@@ -173,6 +173,39 @@ jailhouse cell list
 3. 提交代码
 4. 新建 Pull Request
 
+### 提交门禁与约定式提交（Conventional Commits）
+
+为保证 commit 历史整洁、可回溯，本仓库提供了本地 git hooks（repo-local）门禁，并对提交消息采用 Conventional Commits v1.0.0 规范（同时包含本仓库附加要求：`Signed-off-by` 与 `Tags` trailers）。
+
+1）安装 hooks（一次性，推荐）
+
+```bash
+bash scripts/install-git-hooks.sh
+```
+
+2）按需启用（门禁 / 约定式提交可二选一）
+
+```bash
+# 只启用“门禁”（Signed-off-by/Tags 等）
+bash scripts/install-git-hooks-gate.sh
+
+# 只启用“约定式提交”（Conventional Commits v1.0.0）
+bash scripts/install-git-hooks-conventional.sh
+```
+
+3）提交消息写法（示例）
+
+```text
+feat: Add resource tree search
+
+Add a filter box to locate nodes in large JHR files.
+
+Signed-off-by: Your Name <you@example.com>
+```
+
+- 建议使用 `git commit -s` 自动追加 `Signed-off-by`。
+- 详细规则见：`docs/GIT_LINT.md` 与 `docs/COMMIT_CONVENTION.md`。
+
 ## 特技
 
 1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
