@@ -25,7 +25,7 @@ ivshmem_doc = """\
 
 核间通信使用共享内存，共享内存是连续的一段物理内存空间，所有的GuestOS和主机都可以访问这段内存空间，内存空间的划分为
 1. state section
-2. read/wirte section
+2. read/write section
 3. output section， 每个GuestOS都存在独立的output section
 
 核间通信主要使用 output section
