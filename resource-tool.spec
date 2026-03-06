@@ -1,20 +1,28 @@
 # -*- mode: python ; coding: utf-8 -*-
-
+import glob
+import os
+from PyInstaller.utils.hooks import collect_data_files
 
 block_cipher = None
 
+ROOT = os.path.abspath(".")
+local_hiddenimports = [
+    os.path.splitext(os.path.basename(p))[0]
+    for p in glob.glob("*.py")
+    if os.path.basename(p) not in ("build.py",)
+]
 
 a = Analysis(
     ['mainui.py'],
-    pathex=[],
+    pathex=[ROOT],
     binaries=[],
     datas=[
         ('platform', 'platform'),
         ('demos', 'demos'),
         ('assets/template', 'template'),
         ('tools', 'tools'),
-    ],
-    hiddenimports=[],
+    ] + collect_data_files('jaraco.text'),
+    hiddenimports=local_hiddenimports + ['backports.tarfile'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
