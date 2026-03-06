@@ -121,5 +121,5 @@ class CreateDialog(QtWidgets.QDialog):
 
             rsc.set_name(name)  # 设置配置名称
             ResourceMgr().get_instance().set_current(rsc)    # 设置为当前配置
-            self.setResult(1)    设置结果代码为1（成功）
+            self.setResult(1)    # 设置结果代码为1（成功）
             self.close()
